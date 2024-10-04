@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "690790414473",
+    "project_id": "appviajesegurobas",
+    "storage_bucket": "appviajesegurobas.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690790414473:android:f369bfd4120afcd051ae58",
+        "android_client_info": {
+          "package_name": "com.example.viaje_seguro_app_android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoT0bXOYjU8HfemMU3-TEJR7b4Xjhle5I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
