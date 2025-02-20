@@ -41,46 +41,7 @@ class _ConductorPageState extends ConsumerState<ConductorPage> {
             title: Text("Conductor"),
             subtitle: Text("Veamos que tienes por hacer"),
           ),
-          Expanded(
-            child: FutureCustomWidget(
-              future: UsuariosController(context: context, ref: ref)
-                  .getUserActivesWithConductorDNI(),
-              widgetBuilder: (context, snapshot) {
-                List<ReporteViajeModel> _item = snapshot.data;
-                return Column(
-                  children: [
-                    Expanded(
-                      child: _item.isEmpty
-                          ? const Center(
-                              child: Text("No hay viajes realizados"),
-                            )
-                          : ListView.builder(
-                              itemCount: _item.length,
-                              itemBuilder: (context, index) {
-                                final model = _item[index];
-                                return ListTile(
-                                  leading: const Icon(Icons.person),
-                                  title: Text(
-                                      "${model.dniUsuario} - ${getDistance(LatLng(model.latInicial, model.lngInicial), LatLng(model.latFinal, model.lngFinal)).toStringAsFixed(2)} km "),
-                                  subtitle: Text(model.direccionFinal ??
-                                      "No hay dirección final"),
-                                );
-                              },
-                            ),
-                    ),
-                    ButtonCustomBase(
-                        padding: const EdgeInsets.symmetric(horizontal: 15),
-                        color: Colors.greenAccent.shade400,
-                        onPressed: () {
-                          setState(() {});
-                        },
-                        colorText: Colors.black,
-                        title: "Actualizar"),
-                  ],
-                );
-              },
-            ),
-          ),
+    
           ButtonCustomBase(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               onPressed: () {

@@ -67,12 +67,7 @@ class _VehiculosPageState extends ConsumerState<VehiculosPage> {
           //
           MaterialButton(
             onPressed: () async {
-              await DialogFState(context).showContentDialog(
-                const Dialog(
-                  child: DialogRegistrarVehiculos(),
-                ),
-              );
-              setState(() {});
+   
             },
             minWidth: double.maxFinite,
             color: Theme.of(context).colorScheme.primary,
@@ -184,19 +179,7 @@ class _DialogRegistrarVehiculosState
                     if (response.statusCode == 200) {
                       isBackReturn(context);
                     } else {
-                      DialogFState(context)
-                          .showContentDialog(CupertinoAlertDialog(
-                        title: const Text("Error"),
-                        content: Text(response.message),
-                        actions: [
-                          CupertinoDialogAction(
-                            child: const Text("Aceptar"),
-                            onPressed: () {
-                              isBackReturn(context);
-                            },
-                          )
-                        ],
-                      ));
+                   
                     }
                   },
                   shape: RoundedRectangleBorder(
@@ -227,58 +210,7 @@ class _BuscarUsuarioPasajeroState extends ConsumerState<BuscarUsuarioPasajero> {
   final BorderRadius _radius = BorderRadius.circular(15);
   @override
   Widget build(BuildContext context) {
-    return FutureCustomWidget(
-      future:
-          UsuariosController(context: context, ref: ref).getAllConductorUsers(),
-      widgetBuilder: (context, snapshot) {
-        List<UsuarioModel> item = snapshot.data;
-
-        if (item.isEmpty) {
-          return ListTile(
-            shape: RoundedRectangleBorder(
-              borderRadius: _radius,
-              side: const BorderSide(color: Colors.grey),
-            ),
-            title: const Text("Estado"),
-            subtitle:
-                const Text("Por favor registre un usuario como conductor"),
-          );
-        }
-
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: _radius,
-            border: Border.all(color: Colors.grey),
-          ),
-          child: DropdownButton(
-            isExpanded: true,
-            underline: const SizedBox.shrink(),
-            borderRadius: _radius,
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            items: List.generate(
-              item.length,
-              (index) {
-                return DropdownMenuItem(
-                  value: item[index].dni,
-                  child: Text(
-                    item[index].nombre,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  onTap: () {
-                    ref
-                        .read(usuarioSelectedVehiculoProvider.notifier)
-                        .update((state) => item[index].dni);
-                  },
-                );
-              },
-            ),
-            hint: const Text("Seleccionar conductor"),
-            value: item.first.dni,
-            onChanged: (value) {},
-          ),
-        );
-      },
-    );
+    return Container();
   }
 }
 

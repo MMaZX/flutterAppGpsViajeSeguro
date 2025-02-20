@@ -10,9 +10,7 @@ class SharedToken {
       await SharedPreferences.getInstance();
 
   Future<void> setLoginToken(UsuarioModel model) async {
-    SharedPreferences pref = await setInstance();
-    final encode = jsonEncode(model.toMap());
-    pref.setString(tokenId, encode);
+
   }
 
   Future<void> deleteLoginToken() async {
@@ -20,20 +18,4 @@ class SharedToken {
     pref.remove(tokenId);
   }
 
-  Future<UsuarioModel> getLoginToken() async {
-    try {
-      SharedPreferences pref = await setInstance();
-      String value = pref.getString(tokenId) ?? "";
-      if (value.isEmpty) {
-        return UsuarioModel.empty();
-      }
-      final decode = jsonDecode(value);
-      UsuarioModel element = UsuarioModel.fromJson(decode);
-      print(element.toMap());
-      return element;
-    } catch (e) {
-      print(e);
-      throw Exception("ERROR: $e");
-    }
-  }
 }

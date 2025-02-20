@@ -10,48 +10,6 @@ isBackReturn(context) {
   }
 }
 
-class RolDropdownCustom extends ConsumerStatefulWidget {
-  const RolDropdownCustom({super.key});
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _RolDropdownCustomState();
-}
-
-class _RolDropdownCustomState extends ConsumerState<RolDropdownCustom> {
-  final BorderRadius _borderRadius = BorderRadius.circular(15);
-  @override
-  Widget build(BuildContext context) {
-    final valueSelected = ref.watch(selectedRolDropdownProvider);
-    return Container(
-      decoration: BoxDecoration(
-          borderRadius: _borderRadius,
-          border: Border.all(color: colorsThemeDefault(context))),
-      child: DropdownButton<String>(
-        items: List.generate(
-          modelRol.length,
-          (index) {
-            final item = modelRol[index].toUpperCase().toString();
-            return DropdownMenuItem(value: item, child: Text(item));
-          },
-        ),
-        value: valueSelected,
-        elevation: 0,
-        alignment: Alignment.center,
-        isDense: true,
-        isExpanded: true,
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-        borderRadius: _borderRadius,
-        underline: const SizedBox.shrink(),
-        onChanged: (value) {
-          ref
-              .read(selectedRolDropdownProvider.notifier)
-              .update((state) => value!);
-        },
-      ),
-    );
-  }
-}
-
 class ButtonCustomBase extends StatelessWidget {
   final Function()? onPressed;
   final String title;

@@ -1,30 +1,19 @@
 import 'dart:developer';
-
-import 'package:app_viaje_seguro/config/api.dart';
-import 'package:app_viaje_seguro/config/shared_preferences.dart';
-import 'package:app_viaje_seguro/controller/vehiculo_controller.dart';
-import 'package:app_viaje_seguro/pages/conductor_page.dart';
-import 'package:app_viaje_seguro/pages/maps_restore.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 // My packages
 import 'package:app_viaje_seguro/config/theme.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
+
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderContent());
-  await Firebase.initializeApp(
-      // options: DefaultFirebaseOptions.currentPlatform,
-      );
 }
 
 class ProviderContent extends StatelessWidget {
@@ -76,15 +65,52 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     // final theme = context.watch<ThemeCubit>();
     return BlocBuilder<ThemeCubit, bool>(
       builder: (context, state) {
-        return MaterialApp(
+        return ShadApp.material(
+          title: 'GR Manager',
+          materialThemeBuilder: (context, theme) {
+            return ThemeData(
+              fontFamily: 'Inter',
+              useMaterial3: true,
+              colorScheme: theme.colorScheme,
+
+            );
+          },
+          theme: ShadAppTheme().getLightTheme(),
+          darkTheme: ShadAppTheme().getDarkTheme(),
           debugShowCheckedModeBanner: false,
-          title: 'Viaje Seguro',
-          theme: ThemeApp.getLight(),
-          darkTheme: ThemeApp.getDark(),
-          themeMode: state ? ThemeMode.dark : ThemeMode.light,
+          themeCurve: Curves.fastLinearToSlowEaseIn,
+          themeMode: state ? ThemeMode.light : ThemeMode.dark,
           home: const SesionPage(),
         );
       },
     );
+  }
+}
+
+class ShadAppTheme {
+  getDarkTheme() {
+    return ShadThemeData(
+      radius: getBorderRadius(),
+      brightness: Brightness.light,
+      colorScheme: ShadColorScheme.fromName(
+        'violet',
+        brightness: Brightness.light,
+      ),
+    );
+  }
+
+  getLightTheme() {
+    return ShadThemeData(
+      radius: getBorderRadius(),
+      brightness: Brightness.dark,
+      colorScheme: ShadColorScheme.fromName(
+        'violet',
+        brightness: Brightness.dark,
+      ),
+    );
+  }
+
+  BorderRadius getBorderRadius() {
+    return BorderRadius.circular(10);
   }
 }

@@ -7,6 +7,9 @@ import 'package:app_viaje_seguro/pages/404.dart';
 import 'package:app_viaje_seguro/pages/dashboard_page.dart';
 import 'package:app_viaje_seguro/pages/incidencias_page.dart';
 import 'package:app_viaje_seguro/pages/location_search_screen.dart';
+import 'package:app_viaje_seguro/pages/page_index/notificaciones_page.dart';
+import 'package:app_viaje_seguro/pages/page_index/ubicacion_page.dart';
+import 'package:app_viaje_seguro/pages/page_index/usuario_page.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/pages/vehiculos_registrar.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
@@ -14,6 +17,11 @@ import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
+
+final indexomeBottomNavigatorProvider = StateProvider<int>((ref) {
+  return 0;
+});
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -23,6 +31,7 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   late SocketController socket;
+
   @override
   void initState() {
     super.initState();
@@ -30,196 +39,135 @@ class _HomePageState extends ConsumerState<HomePage> {
     socket.connectedSocket();
   }
 
-  OverlayEntry? overlayEntry;
-
   @override
   Widget build(BuildContext context) {
-    final userContent = ref.watch(getUserModelValuesProvider);
-
-    return userContent.when(
-      data: (data) {
-        String rol = data.rol;
-        if (rol == "CONDUCTOR") {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text(
-                "Viaje Seguro App",
-                style: TextStyle(fontWeight: FontWeight.bold, height: 0),
-              ),
-              actions: const [IconChangeTheme()],
-            ),
-            drawer: const _DrawerContent(),
-            body: const GetWidget(),
-          );
-        }
-        if (rol == "PASAJERO") {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text(
-                "Viaje Seguro App",
-                style: TextStyle(fontWeight: FontWeight.bold, height: 0),
-              ),
-              actions: const [IconChangeTheme()],
-            ),
-            body: const SearchLocationScreen(),
-          );
-        }
-        return const NotFound404();
-      },
-      error: (error, stackTrace) {
-        return Scaffold(
-          body: Center(
-            child: Text(error.toString()),
-          ),
-        );
-      },
-      loading: () {
-        return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _DrawerContent extends ConsumerStatefulWidget {
-  const _DrawerContent();
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => __DrawerContentState();
-}
-
-class __DrawerContentState extends ConsumerState<_DrawerContent> {
-  @override
-  Widget build(BuildContext context) {
-    int indexSelected = ref.watch(indexHomeProvider);
-    final userContent = ref.watch(getUserModelValuesProvider);
-    return SafeArea(
-        child: Drawer(
-      child: Column(
-        children: [
-          15.he,
-          userContent.when(
-            data: (data) {
-              UsuarioModel item = data;
-              return ListTile(
-                leading: const Icon(Icons.gps_fixed_sharp),
-                title: const Text("Viaje Seguro"),
-                subtitle: Text(
-                    "${item.nombre} ${item.apellidoPaterno} ${item.apellidoMaterno} [${item.rol}]"),
-              );
-            },
-            error: (error, stackTrace) {
-              return ListTile(
-                leading: const Icon(Icons.gps_off_rounded),
-                title: const Text("Estado ERROR"),
-                subtitle: Text(error.toString()),
-              );
-            },
-            loading: () {
-              return const ListTile(
-                leading: Icon(Icons.gps_off_rounded),
-                title: Text("Viaje Seguro"),
-                subtitle: Text("..."),
-              );
-            },
-          ),
-          const Divider(),
-          10.he,
-          // const ListTile(title: Text("Acciones")),
-          Expanded(
-              child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            itemCount: indexList().length,
-            itemBuilder: (context, index) {
-              final item = indexList()[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: MaterialButton(
-                  color: indexSelected == item.index
-                      ? Colors.blueAccent.shade700
-                      : Colors.grey.withOpacity(0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  onPressed: () {
-                    ref
-                        .read(indexHomeProvider.notifier)
-                        .update((state) => item.index);
-                    isBackReturn(context);
-                  },
-                  elevation: 0,
-                  focusElevation: 0,
-                  hoverElevation: 0,
-                  disabledElevation: 0,
-                  highlightElevation: 0,
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Opacity(
-                        opacity: indexSelected == item.index ? 1 : 0.5,
-                        child: Text(
-                          item.title,
-                          style: TextStyle(
-                            fontSize: 15,
-                            height: 0,
-                            fontWeight: FontWeight.bold,
-                            color: indexSelected == item.index
-                                ? Colors.white
-                                : null,
-                          ),
-                        )),
-                  ),
-                ),
-              );
-            },
-          )),
-// logout
-          ButtonCustomBase(
-            color: Colors.redAccent.shade700,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            onPressed: () async {
-              await SharedToken().deleteLoginToken();
-              ref.invalidate(getUserModelValuesProvider);
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  CupertinoPageRoute(
-                    builder: (context) => const SesionPage(),
-                  ),
-                  (route) => false);
-            },
-            title: "Cerrar sesión",
-          )
+    final indexHome = ref.watch(indexomeBottomNavigatorProvider);
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text("Bienvenido a AlzSafe"),
+        actions: const [
+          IconChangeTheme(),
         ],
       ),
-    ));
+      body: SafeArea(
+        child: Center(child: getIndexWidget(indexHome)),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: indexHome,
+        useLegacyColorScheme: false,
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+        enableFeedback: true,
+        selectedItemColor: Colors.deepPurpleAccent.shade200,
+        onTap: (value) => ref
+            .read(indexomeBottomNavigatorProvider.notifier)
+            .update((state) => value),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(LucideIcons.house),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(LucideIcons.locate),
+            label: 'Ubicación',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(LucideIcons.user),
+            label: 'Usuario',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(LucideIcons.bell),
+            label: 'Notificaciones',
+          ),
+        ],
+      ),
+    );
+  }
+
+  getIndexWidget(int index) {
+    switch (index) {
+      case 0:
+        return const HomeIndexPageCustom();
+      case 1:
+        return const UbicacionIndexPage();
+      case 2:
+        return const UsuarioIndexPage();
+      case 3:
+        return const NotificacionIndexPage();
+      default:
+        return const NotFound404();
+    }
   }
 }
 
-class GetWidget extends ConsumerWidget {
-  const GetWidget({super.key});
+class HomeIndexPageCustom extends ConsumerWidget {
+  const HomeIndexPageCustom({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final indexSelected = ref.watch(indexHomeProvider);
-    return PopScope(
-      canPop: false,
-      child: _buildContent(indexSelected),
-    );
-  }
-}
+    getContentButton(title, IconData icon) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              child: ShadImage.square(icon, size: 30)),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )
+        ],
+      );
+    }
 
-Widget _buildContent(indexSelected) {
-  switch (indexSelected) {
-    case 1:
-      return const DashboardPage();
-    case 2:
-      return const IncidenciasPage();
-    case 3:
-      return const SearchLocationScreen();
-    case 4:
-      return const VehiculosPage();
-    default:
-      return const NotFound404();
+    return SizedBox(
+      width: 500,
+      child: GridView(
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 250,
+          mainAxisExtent: 250,
+        ),
+        children: [
+          ShadButton.secondary(
+            onPressed: () {},
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    child:
+                        const ShadImage.square(LucideIcons.mapPin, size: 30)),
+                const Text("Ubicación"),
+              ],
+            ),
+          ),
+          ShadButton.secondary(
+            onPressed: () {},
+            child: getContentButton(
+              "Paciente",
+              LucideIcons.userPlus,
+            ),
+          ),
+          ShadButton.secondary(
+            onPressed: () {},
+            child: getContentButton(
+              "Cuidador",
+              LucideIcons.briefcaseMedical,
+            ),
+          ),
+          ShadButton.secondary(
+            onPressed: () {},
+            child: getContentButton(
+              "Notificaciones",
+              LucideIcons.bell,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // My packages
 import 'package:app_viaje_seguro/widgets/widgets.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class RegistrarPage extends ConsumerStatefulWidget {
   const RegistrarPage({super.key});
@@ -19,215 +20,127 @@ class RegistrarPage extends ConsumerStatefulWidget {
 
 class _RegistrarPageState extends ConsumerState<RegistrarPage> {
   TextEditingController nombresController = TextEditingController();
-  TextEditingController apellidosPaternoController = TextEditingController();
-  TextEditingController apellidoMaternoController = TextEditingController();
-  TextEditingController dniController = TextEditingController();
-  TextEditingController numerodecelularController = TextEditingController();
+  TextEditingController correoController = TextEditingController();
+
   TextEditingController usuarioController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-// TextEditingController Controller = TextEditingController();
-// TextEditingController Controller = TextEditingController();
+
+  final inputDecoration =
+      const ShadDecoration(labelPadding: EdgeInsets.symmetric(horizontal: 5));
+
   @override
   Widget build(BuildContext context) {
-    final rolSelected = ref.watch(selectedRolDropdownProvider);
-
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text(
           "Registrate",
-          style: TextStyle(fontWeight: FontWeight.w900, height: 0),
+          style: TextStyle(fontWeight: FontWeight.bold, height: 0),
         ),
         actions: const [
           IconChangeTheme(),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              children: [
-                const Text("Selecciona tu rol"),
-                const RolDropdownCustom(),
-                15.he,
-                const Text(
-                  "Ingresa tus datos personales para continuar",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                10.he,
-                const Text("Nombre"),
-                TextFormCustom(
-                  controller: nombresController,
-                ),
-                const Text("Apellido Paterno"),
-                TextFormCustom(
-                  controller: apellidosPaternoController,
-                ),
-                const Text("Apellido Materno"),
-                TextFormCustom(
-                  controller: apellidoMaternoController,
-                ),
-                const Text("DNI"),
-                TextFormCustom(
-                  controller: dniController,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  keyboardType: TextInputType.number,
-                ),
-                const Text("Número de celular"),
-                TextFormCustom(
-                  controller: numerodecelularController,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  keyboardType: TextInputType.number,
-                ),
-                //
-                10.he,
-                const Divider(),
-                10.he,
-                const Text(
-                  "Genera tus credenciales",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const Text("Usuario"),
-                TextFormCustom(
-                  controller: usuarioController,
-                ),
-                const Text("Clave de Acceso"),
-                TextFormCustom(
-                  controller: passwordController,
-                ),
-                20.he,
-              ],
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 15),
-            child: MaterialButton(
-              minWidth: double.maxFinite,
-              color: colorsThemeDefault(context),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              onPressed: () async {
-                final usuario = UsuarioModel(
-                    nombre: nombresController.text,
-                    apellidoPaterno: apellidosPaternoController.text,
-                    apellidoMaterno: apellidoMaternoController.text,
-                    dni: dniController.text,
-                    celular: numerodecelularController.text,
-                    usuario: usuarioController.text,
-                    clave: passwordController.text,
-                    rol: rolSelected,
-                    );
-                DialogFState(context).showLoading();
-
-                final value =
-                    await UsuariosController(context: context, ref: ref)
-                        .createUser(usuario);
-                isBackReturn(context);
-                ref.invalidate(getUserModelValuesProvider);
-                DialogFState(context).showContentDialog(
-                  CupertinoAlertDialog(
-                    title: Text(value.statusCode == 200 ? "Correcto" : "Error"),
-                    content: Text(value.message),
-                    actions: [
-                      CupertinoDialogAction(
-                        onPressed: () => isBackReturn(context),
-                        child: const Text("Aceptar"),
-                      )
-                    ],
-                  ),
-                );
-
-                if (value.statusCode == 200) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (context) {
-                        return const HomePage();
-                      },
-                    ),
-                    (route) => false,
-                  );
-                }
-
-              },
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        child: Column(
+          children: [
+            Center(
               child: Container(
-                  padding: const EdgeInsets.all(15),
-                  child: const Text(
-                    "Registrar usuario",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.white),
-                  )),
+                margin: const EdgeInsets.all(20),
+                height: 200,
+                width: 200,
+                decoration: const BoxDecoration(
+                  color: Colors.deepPurpleAccent,
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                    child: Text(
+                  "Agrega\nuna Foto",
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    height: 0,
+                  ),
+                )),
+              ),
             ),
-          ),
-          10.he,
-        ],
+            ShadInputFormField(
+              decoration: inputDecoration,
+              label: const Text("Nombre de usuario"),
+              controller: usuarioController,
+            ),
+            ShadInputFormField(
+              decoration: inputDecoration,
+              label: const Text("Correo"),
+              controller: correoController,
+            ),
+            ShadInputFormField(
+              decoration: inputDecoration,
+              label: const Text("Contraseña"),
+              controller: passwordController,
+              obscureText: true,
+            ),
+            SelectedRolUsuario(
+              onChanged: (value) {},
+            ),
+            ShadButton(
+              width: double.maxFinite,
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  CupertinoPageRoute(builder: (context) => const HomePage()),
+                  (route) => false,
+                );
+              },
+              child: const Flexible(child: Text("Registrar usuario")),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class DialogFState {
-  final BuildContext context;
+class SelectedRolUsuario extends ConsumerStatefulWidget {
+  final void Function(RolUsuarioField? value)? onChanged;
 
-  DialogFState(this.context);
-
-  Future<void> showContentDialog(Widget widgetDialog) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return PopScope(
-            canPop: false,
-            // ignore: deprecated_member_use
-            onPopInvoked: (didPop) async {
-              return;
-            },
-            child: widgetDialog);
-      },
-    );
-  }
-
-  Future<void> showLoading() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return PopScope(
-            canPop: false,
-            // ignore: deprecated_member_use
-            onPopInvoked: (didPop) async {
-              return;
-            },
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ));
-      },
-    );
-  }
-}
-
-class DialogStateWidget extends StatelessWidget {
-  final String title;
-  final String message;
-  final bool isSuccess;
-  const DialogStateWidget(
-      {super.key,
-      required this.title,
-      required this.message,
-      this.isSuccess = false});
+  const SelectedRolUsuario({
+    super.key,
+    required this.onChanged,
+  });
 
   @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _SelectedRolUsuarioState();
+}
+
+class _SelectedRolUsuarioState extends ConsumerState<SelectedRolUsuario> {
+  @override
   Widget build(BuildContext context) {
-    return CupertinoAlertDialog(
-      title: Text(title),
-      content: Text(message),
-      actions: [
-        CupertinoButton(
-          color: isSuccess ? Colors.blueAccent.shade700 : Colors.redAccent,
-          onPressed: () => isBackReturn(context),
-          child: const Text("Aceptar"),
-        )
-      ],
+    return SizedBox(
+      width: double.maxFinite,
+      child: ShadSelect<RolUsuarioField>(
+        placeholder: const Text("Selecciona un rol"),
+        options: List.generate(
+          RolUsuarioField.values.length,
+          (index) {
+            RolUsuarioField item = RolUsuarioField.values[index];
+            return ShadOption(
+              value: item,
+              child: Text(
+                item.name.toUpperCase().toString(),
+              ),
+            );
+          },
+        ),
+        selectedOptionBuilder: (context, value) {
+          return Text(value.name.toUpperCase());
+        },
+        onChanged: widget.onChanged,
+      ),
     );
   }
 }

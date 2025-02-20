@@ -54,7 +54,6 @@ class _MapFlutterWidgetState extends ConsumerState<MapFlutterWidget> {
     final retrieveModel = ref.watch(retrieveMapSearchBoxProvider);
     final gpsPositions = ref.watch(getLocationStatusStreamProvider);
     final listMarker = ref.watch(listMarketContainerProvider);
-    final userModel = ref.watch(getUserModelValuesProvider);
     return Scaffold(
       body: gpsPositions.when(
         data: (data) {

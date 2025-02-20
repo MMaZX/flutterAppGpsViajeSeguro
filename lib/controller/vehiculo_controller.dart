@@ -51,11 +51,11 @@ class VehiculoController {
     try {
       String path = Endpoint(context: context)
           .getPath(ContentApi.actualizarReporteViajeFinalReal);
-      final userModel = await SharedToken().getLoginToken();
+
       final value = await Geolocator.getCurrentPosition();
 
       final model = {
-        "dni_usuario": userModel.dni,
+        "dni_usuario": '',
         "lng_final_real": value.longitude,
         "lat_final_real": value.latitude,
         "valoracion": valoracion,

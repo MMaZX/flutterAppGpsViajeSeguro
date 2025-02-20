@@ -1,4 +1,4 @@
-package com.example.viaje_seguro_app_android
+package com.example.ALZSAFE
 
 import io.flutter.embedding.android.FlutterActivity
 

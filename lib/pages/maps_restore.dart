@@ -48,7 +48,6 @@ class _MapRestoreWidgetState extends ConsumerState<MapRestoreWidget> {
   @override
   Widget build(BuildContext context) {
     final gpsPositions = ref.watch(getLocationStatusStreamProvider);
-    final userModel = ref.watch(getUserModelValuesProvider);
     return Scaffold(
       body: gpsPositions.when(
         data: (data) {

@@ -47,23 +47,21 @@ class SocketController {
     socket.connect();
     socket.onConnect((_) {
       print('Connected and WS!!');
-      _SocketFunctions(socket, context).userRegisterSocket();
-      _SocketFunctions(socket, context).getSolicitudItem();
+
     });
 
     // DESCONECTAR EL SOCKET BB
     socket.onDisconnect((_) {
       print("Disconnected from WebSocket server");
-      _SocketFunctions(socket, context).userRegisterSocket();
     });
   }
 
   Future<void> sendSolicitud(int dni, int numAsientos) async {
-    final userModel = await SharedToken().getLoginToken();
+   
     socket.emit('sendSolicitud', {
       'dni': dni,
       'numAsientos': numAsientos,
-      'dnipasajero': int.parse(userModel.dni.toString())
+      'dnipasajero': ''
     });
   }
 
@@ -99,167 +97,6 @@ class _SocketFunctions {
     this.context,
   );
 
-  // función para devolver registrar un usuario en el evento "register" Stream
-  Future<void> userRegisterSocket() async {
-    try {
-      // TRAER EL USUARIO ACTUAL
-      final model = await SharedToken().getLoginToken();
-      //VERIFICAMOS PERMISOS
-      await GeoController().getGeolocatorPermission();
-      // OBTENER LA UBICACION ACTUAL
-      final locationStatus = Geolocator.getPositionStream();
-      await for (Position positionData in locationStatus) {
-        // OBTENER LATITUD Y LONGITUD
-        String lat = positionData.latitude.toString();
-        String lng = positionData.longitude.toString();
-
-        // ENVIAR LA UBICACION AL SERVIDOR
-        final item = RetrieveLocationSocket(
-          id: int.parse(model.dni),
-          lat: lat,
-          lon: lng,
-          rol: model.rol,
-          nombreConductor: model.nombreCompleto,
-          placa: model.placa.toString(),
-          numAsientos: model.numAsientos == null
-              ? 0
-              : int.parse(model.numAsientos.toString()),
-        );
-        // print(item.toMap());
-        socket.emit('register', item.toMap());
-      }
-    } catch (e) {
-      log("ERROR REGISTER $e");
-    }
-  }
-
-  // funcion para devolver la ubicación actual y enviarsela al evento "register" Future
-  Future<void> userRegisterSocketFuture() async {
-    try {
-      // TRAER EL USUARIO ACTUAL
-      final model = await SharedToken().getLoginToken();
-      //VERIFICAMOS PERMISOS
-      await GeoController().getGeolocatorPermission();
-      // OBTENER LA UBICACION ACTUAL
-      Position positionData = await Geolocator.getCurrentPosition();
-      // OBTENER LATITUD Y LONGITUD
-      String lat = positionData.latitude.toString();
-      String lng = positionData.longitude.toString();
-
-      // ENVIAR LA UBICACION AL SERVIDOR
-      final item = RetrieveLocationSocket(
-        id: int.parse(model.dni),
-        lat: lat,
-        lon: lng,
-        rol: model.rol,
-        nombreConductor: model.nombreCompleto,
-      );
-      socket.emit('register', item.toMap());
-    } catch (e) {
-      log("ERROR REGISTER FUTURE $e");
-    }
-  }
-
-  // ENVIAR SOLICITUD DE VIAJE
-
-  Future<void> getSolicitudItem() async {
-    // Inicializamos el usuario actual y la variable booleana de aceptación
-    UsuarioModel userModel = await SharedToken().getLoginToken();
-    bool isAccepted = false;
-    // LLAMAMOS AL CONTROLLER DE NOTIFICACIONES
-    NotificationController notificationController =
-        NotificationController(context: context);
-
-    // Llamamos al evento "solicitud" del servidor
-    socket.on('solicitud', (data) async {
-      SolicitudSocketModel model = SolicitudSocketModel.fromJson(data);
-      socket.emit('estadoSolicitudRespuesta', {
-        'estado': SolicitudEstadoPasajero.waiting.index,
-        'dni': model.dniPasajero,
-      });
-      try {
-        // SI ES CONDUCTOR ENTONCES LE MANDAREMOS LA SOLICITUD
-        if (userModel.rol == 'CONDUCTOR') {
-          if (data is Map<String, dynamic>) {
-            RetrieveLocationSocket? userSocketModel = model.user;
-            if (model.dni != int.parse(userModel.dni.toString())) {
-              return;
-            }
-            if (userSocketModel == null) {
-              throw Exception(
-                  "No se pudo recuperar la información del usuario");
-            }
-
-            // Mostrar overlay según la solicitud
-            isAccepted = await notificationController
-                .showOverlayRequestConductor(model.message, userSocketModel);
-
-            if (isAccepted) {
-              socket.emit('estadoSolicitudRespuesta', {
-                'estado': SolicitudEstadoPasajero.accepted.index,
-                'dni': model.dniPasajero,
-              });
-              final solicitudModel = VehiculoSolicitudModel(
-                  dniUsuario: model.dni.toString(),
-                  numAsientosActivos:
-                      int.parse(model.numAsientosRequest.toString()),
-                  estado: 0);
-              await VehiculoController(context: context)
-                  .guardarVehiculoSolicitud(solicitudModel);
-                    // final userModel = await SharedToken().getLoginToken();
-              final rol = userModel.rol;
-              UserActiveModel status =
-                  await VehiculoController(context: context)
-                      .getActiveTravel(int.parse(userModel.dni), userModel.rol);
-              log(status.toMap().toString());
-              Navigator.pushAndRemoveUntil(
-                context,
-                CupertinoPageRoute(builder: (context) =>  ConductorPage(
-                  userActiveModel: status,
-                )),
-                (route) => false,
-              );
-            } else {
-              socket.emit('estadoSolicitudRespuesta', {
-                'estado': SolicitudEstadoPasajero.rejected.index,
-                'dni': model.dniPasajero,
-              });
-            }
-          }
-        }
-        if (userModel.rol == 'PASAJERO') {
-          if (data is Map<String, dynamic>) {
-            RetrieveLocationSocket? userSocketModel = model.user;
-            if (model.dniPasajero != int.parse(userModel.dni.toString())) {
-              return;
-            }
-            if (userSocketModel == null) {
-              throw Exception(
-                  "No se pudo recuperar la información del usuario");
-            }
-            socket.emit('estadoSolicitudRespuesta', {
-              'estado': SolicitudEstadoPasajero.waiting.index,
-              'dni': model.dniPasajero,
-            });
-            Navigator.pushAndRemoveUntil(
-              context,
-              CupertinoPageRoute(
-                  builder: (context) => EsperandoPage(
-                        dniPasajero: model.dniPasajero,
-                        dniConductor: model.dni,
-                        numAsientos:
-                            int.parse(model.numAsientosRequest.toString()),
-                      )),
-              (route) => false,
-            );
-            return;
-          }
-        }
-      } catch (e) {
-        showCustomSnackbar(context, e.toString());
-      }
-    });
-  }
 }
 
 class SocketRequest {

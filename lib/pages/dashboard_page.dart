@@ -35,7 +35,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   "Ingresa y verifica tus viajes actuales",
                   style: TextStyle(color: Colors.black),
                 ),
-                onTap: () => getStatusActive(context),
+  
               ),
               10.he,
               GridView(

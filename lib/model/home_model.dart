@@ -1,4 +1,4 @@
-import 'package:app_viaje_seguro/model/usuarios_model.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final indexHomeProvider = StateProvider<int>((ref) {
@@ -20,9 +20,6 @@ class HomeModel {
       this.estado});
 
   bool validateState(String rol) {
-    if (!modelRolBase.contains(rol)) {
-      throw Exception("No existe ese rol, no se mostrará el contenido.");
-    }
     return true;
   }
 }
