@@ -1,0 +1,2 @@
+C:/Users/qemu/Documents/projects/flutterAppGpsViajeSeguro/android/app/.cxx/Debug/6g6g4624/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/qemu/Documents/projects/flutterAppGpsViajeSeguro/android/app/.cxx/Debug/6g6g4624/arm64-v8a/CMakeFiles/rebuild_cache.dir

@@ -19,14 +19,10 @@ class RegistrarPage extends ConsumerStatefulWidget {
 }
 
 class _RegistrarPageState extends ConsumerState<RegistrarPage> {
-  TextEditingController nombresController = TextEditingController();
-  TextEditingController correoController = TextEditingController();
-
-  TextEditingController usuarioController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-
   final inputDecoration =
       const ShadDecoration(labelPadding: EdgeInsets.symmetric(horizontal: 5));
+
+  BodyCreateUsuarios bodyModel = BodyCreateUsuarios();
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +39,7 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: Column(
+        child: ListView(
           children: [
             Center(
               child: Container(
@@ -69,31 +65,63 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
             ),
             ShadInputFormField(
               decoration: inputDecoration,
-              label: const Text("Nombre de usuario"),
-              controller: usuarioController,
+              label: const Text("Nombres"),
+              onChanged: (value) => bodyModel.name = value,
+            ),
+            ShadInputFormField(
+              decoration: inputDecoration,
+              label: const Text("Apellidos"),
+              onChanged: (value) => bodyModel.lastName = value,
+            ),
+            // ShadInputFormField(
+            //   decoration: inputDecoration,
+            //   label: const Text("Nombre de usuario"),
+            //   onChanged: (value) => bodyModel.email = value,
+            // ),
+            SelectedRolUsuario(
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    bodyModel.rol = value.name.toUpperCase().toString();
+                  });
+                }
+              },
+            ),
+            ShadInputFormField(
+              decoration: inputDecoration,
+              label: const Text("DNI"),
+              onChanged: (value) => bodyModel.identification = value,
             ),
             ShadInputFormField(
               decoration: inputDecoration,
               label: const Text("Correo"),
-              controller: correoController,
+              onChanged: (value) => bodyModel.email = value,
             ),
             ShadInputFormField(
               decoration: inputDecoration,
               label: const Text("Contraseña"),
-              controller: passwordController,
+              onChanged: (value) => bodyModel.password = value,
               obscureText: true,
             ),
-            SelectedRolUsuario(
-              onChanged: (value) {},
+            ShadInputFormField(
+              decoration: inputDecoration,
+              label: const Text("Dirección"),
+              onChanged: (value) => bodyModel.address = value,
+              obscureText: true,
             ),
             ShadButton(
               width: double.maxFinite,
-              onPressed: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  CupertinoPageRoute(builder: (context) => const HomePage()),
-                  (route) => false,
-                );
+              onPressed: () async {
+                bodyModel.country = "PERU";
+                final value = await UsuariosController(context, ref)
+                    .createUsuarios(bodyModel);
+                if (value) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    CupertinoPageRoute(builder: (context) => const HomePage()),
+                    (route) => false,
+                  );
+                }
               },
               child: const Flexible(child: Text("Registrar usuario")),
             ),

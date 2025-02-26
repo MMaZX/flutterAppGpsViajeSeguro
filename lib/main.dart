@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:app_viaje_seguro/pages/biometric_page.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
 import 'package:flutter/material.dart';
@@ -22,11 +23,14 @@ class ProviderContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-        child: MultiBlocProvider(providers: [
-      BlocProvider(
-        create: (context) => ThemeCubit(),
-      ),
-    ], child: const App()));
+        child: MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => ThemeCubit(),
+        ),
+      ],
+      child: const App(),
+    ));
   }
 }
 
@@ -72,7 +76,15 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
               fontFamily: 'Inter',
               useMaterial3: true,
               colorScheme: theme.colorScheme,
-
+              appBarTheme: AppBarTheme(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  titleTextStyle: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    height: 0,
+                    fontFamily: 'Inter',
+                  )),
             );
           },
           theme: ShadAppTheme().getLightTheme(),

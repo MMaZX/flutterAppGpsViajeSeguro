@@ -13,3 +13,26 @@ const Color secondaryColor10LightTheme = Color(0xFFEEEEEE);
 const Color secondaryColor5LightTheme = Color(0xFFF8F8F8);
 
 const defaultPadding = 16.0;
+
+class EmptyWidget extends StatelessWidget {
+  final String data;
+  const EmptyWidget(this.data, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(10),
+      child: Text(
+        data,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 18, height: 0),
+      ),
+    );
+  }
+}
+
+RoundedRectangleBorder borderDialog = RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(10),
+);

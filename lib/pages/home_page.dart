@@ -1,18 +1,9 @@
-import 'package:app_viaje_seguro/config/shared_preferences.dart';
 import 'package:app_viaje_seguro/config/socket.dart';
-import 'package:app_viaje_seguro/controller/vehiculo_controller.dart';
-import 'package:app_viaje_seguro/model/home_model.dart';
-import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/404.dart';
-import 'package:app_viaje_seguro/pages/dashboard_page.dart';
-import 'package:app_viaje_seguro/pages/incidencias_page.dart';
-import 'package:app_viaje_seguro/pages/location_search_screen.dart';
+import 'package:app_viaje_seguro/pages/home_views/paciente_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/notificaciones_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/ubicacion_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/usuario_page.dart';
-import 'package:app_viaje_seguro/pages/sesion_page.dart';
-import 'package:app_viaje_seguro/pages/vehiculos_registrar.dart';
-import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -50,8 +41,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           IconChangeTheme(),
         ],
       ),
-      body: SafeArea(
-        child: Center(child: getIndexWidget(indexHome)),
+      body: PopScope(
+        canPop: false,
+        child: SafeArea(
+          child: Center(child: getIndexWidget(indexHome)),
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: indexHome,
@@ -146,7 +140,13 @@ class HomeIndexPageCustom extends ConsumerWidget {
             ),
           ),
           ShadButton.secondary(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(context, CupertinoPageRoute(
+                builder: (context) {
+                  return const PacientePage();
+                },
+              ));
+            },
             child: getContentButton(
               "Paciente",
               LucideIcons.userPlus,
