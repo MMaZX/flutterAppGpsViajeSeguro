@@ -1,9 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/home_page.dart';
-import 'package:app_viaje_seguro/pages/sesion_page.dart';
-import 'package:app_viaje_seguro/provider/model_provider.dart';
-import 'package:app_viaje_seguro/widgets/model_widgets.dart';
+import 'package:app_viaje_seguro/widgets/modal_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -90,8 +90,14 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
             ShadInputFormField(
               decoration: inputDecoration,
               label: const Text("DNI"),
+              keyboardType: const TextInputType.numberWithOptions(
+                  decimal: false, signed: false), // Teclado numérico puro
+              textInputAction: TextInputAction.next,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+
               onChanged: (value) => bodyModel.identification = value,
             ),
+
             ShadInputFormField(
               decoration: inputDecoration,
               label: const Text("Correo"),
@@ -112,9 +118,12 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
             ShadButton(
               width: double.maxFinite,
               onPressed: () async {
+                showDialogLoading(context);
+
                 bodyModel.country = "PERU";
                 final value = await UsuariosController(context, ref)
                     .createUsuarios(bodyModel);
+
                 if (value) {
                   Navigator.pushAndRemoveUntil(
                     context,
@@ -122,6 +131,7 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
                     (route) => false,
                   );
                 }
+                //
               },
               child: const Flexible(child: Text("Registrar usuario")),
             ),

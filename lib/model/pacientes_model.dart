@@ -49,22 +49,40 @@ class PacientesModel {
     );
   }
 
-  // Convertir Modelo a JSON
+}
+
+
+class BodyCreatePacientes {
+  final String name;
+  final String email;
+  final String password;
+  final int age;
+  final String genre;
+  final String phone;
+  final String address;
+  final String image;
+
+  BodyCreatePacientes({
+    required this.name,
+    required this.email,
+    required this.password,
+    required this.age,
+    required this.genre,
+    required this.phone,
+    this.address = '',
+    this.image = '',
+  });
+
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'user_id': userId,
       'name': name,
+      'email': email,
+      'password': password,
       'age': age,
-      'image': image,
       'genre': genre,
       'phone': phone,
       'address': address,
-      'ribbon': ribbon,
-      'qr': qr,
-      'status': status,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'image': image,
     };
   }
 }

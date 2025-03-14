@@ -1,3 +1,5 @@
+import 'package:app_viaje_seguro/model/usuarios_model.dart';
+import 'package:app_viaje_seguro/pages/login_page.dart';
 import 'package:app_viaje_seguro/pages/registrar_page.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
@@ -42,7 +44,14 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     Image.asset('assets/logo_base.png'),
                     const SizedBox(height: 10),
                     ShadButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (context) => const LoginScreenPage(
+                                  RolUsuarioField.familiar),
+                            ));
+                      },
                       width: double.maxFinite,
                       child: const Flexible(
                         child: Text(
@@ -59,7 +68,14 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     // const SizedBox(height: 10),
                     ShadButton(
                       width: double.maxFinite,
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (context) => const LoginScreenPage(
+                                  RolUsuarioField.paciente),
+                            ));
+                      },
                       child: const Flexible(
                         child: Text(
                           "Paciente",
@@ -94,5 +110,4 @@ class _SesionPageState extends ConsumerState<SesionPage> {
       },
     );
   }
-
 }

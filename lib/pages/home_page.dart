@@ -120,7 +120,7 @@ class HomeIndexPageCustom extends ConsumerWidget {
     return SizedBox(
       width: 500,
       child: GridView(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
+        padding: const EdgeInsets.all(10),
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 250,
           mainAxisExtent: 250,

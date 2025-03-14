@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -9,7 +10,7 @@ class Api {
     _dio = Dio(
       BaseOptions(
         baseUrl:
-            'http://192.168.2.100/api-alzsafe/public/api', // Cambia esto por la URL de tu API
+            'http://192.168.2.110/api-alzsafe/public/api', // Cambia esto por la URL de tu API
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
         headers: {
@@ -18,27 +19,31 @@ class Api {
       ),
     );
 
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
-        log("Solicitud enviada a: ${options.uri}");
-        print("Método: ${options.method}");
-        print("Encabezados: ${options.headers}");
-        print("Datos: ${options.data}");
-        return handler.next(options);
-      },
-      onResponse: (response, handler) {
-        log("Respuesta recibida desde: ${response.requestOptions.uri}");
-        print("Código de estado: ${response.statusCode}");
-        print("Datos: ${response.data}");
-        return handler.next(response);
-      },
-      onError: (DioException e, handler) {
-        log("Error en la solicitud a: ${e.requestOptions.uri}");
-        print("Mensaje de error: ${e.message}");
-        return handler.next(e);
-      },
-    ));
+    _dio.interceptors.add(ApiInterceptors());
   }
 
   Dio get dio => _dio;
+}
+
+class ApiInterceptors extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    log('➡️ Enviando solicitud: ${options.method} ${options.uri}');
+    log('Datos enviados: ${options.data}');
+    super.onRequest(options, handler);
+  }
+
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    log('✅ Respuesta recibida: ${response.statusCode}');
+    // log('🚀🚀 Body: ${response.data}');
+    super.onResponse(response, handler);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    log('❌ Error en la solicitud: ${jsonEncode(err.response?.data)}',
+        error: err.response?.data);
+    super.onError(err, handler);
+  }
 }
