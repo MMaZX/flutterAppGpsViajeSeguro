@@ -36,3 +36,18 @@ class EmptyWidget extends StatelessWidget {
 RoundedRectangleBorder borderDialog = RoundedRectangleBorder(
   borderRadius: BorderRadius.circular(10),
 );
+
+getLogo({double size = 193, double padding = 0}) {
+  return Padding(
+    padding: EdgeInsets.all(padding),
+    child: ClipOval(
+      child: Image.asset(
+        'assets/logo_base.png',
+        fit:
+            BoxFit.cover, // Asegúrate de que la imagen se recorte correctamente
+        width: size + 7,
+        height: size,
+      ),
+    ),
+  );
+}

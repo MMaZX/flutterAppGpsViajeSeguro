@@ -4,6 +4,7 @@ import 'package:app_viaje_seguro/config/constants.dart';
 import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/pacientes_model.dart';
+import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,8 +20,10 @@ class PacienteController {
 
   Future<List<PacientesModel>> getPacientes() async {
     try {
+      final id = await AuthPrefs().getId();
       final response = await dio.get(
-        '/patient',
+        '/patient/byFamily',
+        queryParameters: {"id": id},
         options: await prefs.setDioOptions(),
       );
       final json = response.data;
@@ -40,6 +43,23 @@ class PacienteController {
       final response = await dio.post(
         '/patient',
         data: paciente.toJson(),
+        options: await prefs.setDioOptions(),
+      );
+      final json = response.data;
+      print(json);
+      isBackReturn(context);
+      return true;
+    } catch (e) {
+      isBackReturn(context);
+      showDialogScope(context, e);
+      return false;
+    }
+  }
+
+  Future<bool> deletePaciente(int id) async {
+    try {
+      final response = await dio.delete(
+        '/patient/$id',
         options: await prefs.setDioOptions(),
       );
       final json = response.data;

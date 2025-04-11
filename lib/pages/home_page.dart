@@ -1,9 +1,12 @@
 import 'package:app_viaje_seguro/config/socket.dart';
 import 'package:app_viaje_seguro/pages/404.dart';
+import 'package:app_viaje_seguro/pages/cuidador/cuidador_lista_pacientes.dart';
+import 'package:app_viaje_seguro/pages/home_views/cuidador_page.dart';
 import 'package:app_viaje_seguro/pages/home_views/paciente_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/notificaciones_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/ubicacion_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/usuario_page.dart';
+import 'package:app_viaje_seguro/provider/model_provider.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -48,35 +51,44 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: indexHome,
-        useLegacyColorScheme: false,
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-        enableFeedback: true,
-        selectedItemColor: Colors.deepPurpleAccent.shade200,
-        onTap: (value) => ref
-            .read(indexomeBottomNavigatorProvider.notifier)
-            .update((state) => value),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.house),
-            label: 'Inicio',
+          currentIndex: indexHome,
+          useLegacyColorScheme: false,
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.locate),
-            label: 'Ubicación',
+          enableFeedback: true,
+          selectedItemColor: Colors.deepPurpleAccent.shade200,
+          onTap: (value) => ref
+              .read(indexomeBottomNavigatorProvider.notifier)
+              .update((state) => value),
+          items: List.generate(
+            menuItems.length,
+            (index) {
+              return BottomNavigationBarItem(
+                icon: Icon(menuItems[index].iconData),
+                label: menuItems[index].nombre,
+              );
+            },
+          )
+          // items: const [
+          //   BottomNavigationBarItem(
+          //     icon: Icon(LucideIcons.house),
+          //     label: 'Inicio',
+          //   ),
+          //   BottomNavigationBarItem(
+          //     icon: Icon(LucideIcons.locate),
+          //     label: 'Ubicación',
+          //   ),
+          //   BottomNavigationBarItem(
+          //     icon: Icon(LucideIcons.user),
+          //     label: 'Usuario',
+          //   ),
+          //   BottomNavigationBarItem(
+          //     icon: Icon(LucideIcons.bell),
+          //     label: 'Notificaciones',
+          //   ),
+          // ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.user),
-            label: 'Usuario',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.bell),
-            label: 'Notificaciones',
-          ),
-        ],
-      ),
     );
   }
 
@@ -90,6 +102,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         return const UsuarioIndexPage();
       case 3:
         return const NotificacionIndexPage();
+      case 4:
+        return const CuidadorPageListaPacientes();
       default:
         return const NotFound404();
     }
@@ -101,6 +115,7 @@ class HomeIndexPageCustom extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final watch = ref.watch(getDashboardMenuItemsProvider);
     getContentButton(title, IconData icon) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -118,56 +133,76 @@ class HomeIndexPageCustom extends ConsumerWidget {
     }
 
     return SizedBox(
-      width: 500,
-      child: GridView(
-        padding: const EdgeInsets.all(10),
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 250,
-          mainAxisExtent: 250,
-        ),
-        children: [
-          ShadButton.secondary(
-            onPressed: () {},
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    child:
-                        const ShadImage.square(LucideIcons.mapPin, size: 30)),
-                const Text("Ubicación"),
-              ],
-            ),
-          ),
-          ShadButton.secondary(
-            onPressed: () {
-              Navigator.push(context, CupertinoPageRoute(
-                builder: (context) {
-                  return const PacientePage();
+        width: 500,
+        child: watch.when(
+            data: (menus) {
+              return GridView.builder(
+                padding: const EdgeInsets.all(10),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 250,
+                  mainAxisExtent: 250,
+                ),
+                itemCount: menus.length,
+                itemBuilder: (context, index) {
+                  final item = menus[index];
+                  return ShadButton(
+                    shadows: const [],
+                    onPressed: () {
+                      if (item.widget != null) {
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (context) => item.widget!,
+                          ),
+                        );
+                      }
+                    },
+                    icon: getContentButton(
+                      item.nombre,
+                      item.iconData,
+                    ),
+                  );
                 },
-              ));
+              );
             },
-            child: getContentButton(
-              "Paciente",
-              LucideIcons.userPlus,
-            ),
-          ),
-          ShadButton.secondary(
-            onPressed: () {},
-            child: getContentButton(
-              "Cuidador",
-              LucideIcons.briefcaseMedical,
-            ),
-          ),
-          ShadButton.secondary(
-            onPressed: () {},
-            child: getContentButton(
-              "Notificaciones",
-              LucideIcons.bell,
-            ),
-          ),
-        ],
-      ),
-    );
+            error: (error, stackTrace) => const NotFound404(),
+            loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                )));
   }
 }
+
+class CustomModelMenu {
+  final IconData iconData;
+  final String nombre;
+  final Widget? widget;
+
+  CustomModelMenu({
+    required this.iconData,
+    required this.nombre,
+    this.widget,
+  });
+}
+
+final List<CustomModelMenu> menuItems = [
+  CustomModelMenu(
+    iconData: LucideIcons.house,
+    nombre: 'Inicio',
+    widget: const HomeIndexPageCustom(),
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.locate,
+    nombre: 'Ubicación',
+    widget: const UbicacionIndexPage(),
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.user,
+    nombre: 'Usuario',
+    widget: const UsuarioIndexPage(),
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.bell,
+    nombre: 'Notificaciones',
+    widget: const NotificacionIndexPage(),
+  ),
+];

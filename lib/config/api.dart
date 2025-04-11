@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Endpoint {
   final BuildContext context;
   Endpoint({required this.context});
 
-  // String path = "http://localhost/apiviajeseguro/public/api";
-  String path = "http://192.168.1.22/apiviajeseguro/public/api";
+  static String apiHost = dotenv.env['API_HOST'].toString();
+  String path = "$apiHost/api";
 
   String getusuariosCRUD({bool isAction = false, String? id}) {
     if (isAction) {
@@ -34,9 +35,7 @@ class ContentApi {
   static String vehiculosPorDNI = "vehiculos/dni";
   static String vehiculosPorNombre = "vehiculos/nombre";
   static String crearIncidencia = "incidencias";
-  //new
-  /*
-   */
+  //
   static String guardarVehiculoSolicitud =
       "vehiculos/state/guardar-vehiculo-solicitud";
   static String crearReporteViaje = "vehiculos/state/crear-reporte-viaje";
@@ -46,4 +45,34 @@ class ContentApi {
   static String asientosPorVehiculo = "vehiculos/asientos";
   static String vehiculosIncidencias = "vehiculos/incidencias";
   static String vehiculosActivosBro = 'vehiculos/estado/viaje';
+}
+
+class ApiEndpoint {
+  final String prefix;
+  ApiEndpoint(this.prefix);
+
+  String endpoint(String endpoint) => "$prefix/$endpoint";
+}
+
+class ApiRoutes {
+  static final _endpoints = <String, ApiEndpoint>{};
+  static ApiEndpoint get(String prefix) {
+    return _endpoints.putIfAbsent(prefix, () => ApiEndpoint(prefix));
+  }
+
+  /* # PREFIX */
+  static final ApiEndpoint cuidador = get("/carer");
+  static final ApiEndpoint listaDeSolicitudes = get("/list-requests");
+  static final ApiEndpoint enviarSolicitud = get("/send-familiar");
+  static final ApiEndpoint validarPaciente = get("/patientValidate");
+  static final ApiEndpoint deleteCuidadorRequest = get("/remove-request");
+  static final ApiEndpoint listaPacientesACuidar = get("/list-notifications-cuidador");
+  /* # ENDPOITNS CUIDADOR */
+
+  static final ApiEndpoint obtenerListaPacientesPorCuidador = get("/pacientesPorCuidadorId");
+  static final ApiEndpoint obtenerListaFamiliaresPorCuidador =
+      get("/familiarPorCuidadorId");
+
+  // static String getCuidador =
+  //     cuidador.endpoint("");
 }

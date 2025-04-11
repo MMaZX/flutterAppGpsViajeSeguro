@@ -1,6 +1,7 @@
 import 'package:app_viaje_seguro/controller/paciente_controller.dart';
 import 'package:app_viaje_seguro/model/pacientes_model.dart';
 import 'package:app_viaje_seguro/pages/constants.dart';
+import 'package:app_viaje_seguro/pages/home_views/paciente_create.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class _PacientePageState extends ConsumerState<PacientePage> {
   @override
   Widget build(BuildContext context) {
     final controller = PacienteController(context, ref);
-
+    final theme = ShadTheme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Pacientes"),
@@ -29,11 +30,12 @@ class _PacientePageState extends ConsumerState<PacientePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
               context,
               CupertinoPageRoute(
                   builder: (context) => const CrearPacientePage()));
+          setState(() {});
         },
         child: const ShadImage.square(LucideIcons.userPlus, size: 24),
       ),
@@ -52,82 +54,59 @@ class _PacientePageState extends ConsumerState<PacientePage> {
                           itemBuilder: (context, index) {
                             PacientesModel paciente = listaPacientes[index];
                             return ListTile(
+                              trailing: ShadButton.secondary(
+                                onPressed: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) =>
+                                          CupertinoAlertDialog(
+                                            title:
+                                                const Text("Eliminar paciente"),
+                                            content: const Text(
+                                                "¿Estás seguro de eliminar"),
+                                            actions: [
+                                              CupertinoDialogAction(
+                                                child: const Text("Cancelar"),
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                              CupertinoDialogAction(
+                                                child: const Text("Eliminar"),
+                                                onPressed: () {
+                                                  controller.deletePaciente(
+                                                      paciente.id);
+                                                  setState(() {});
+                                                },
+                                              ),
+                                            ],
+                                          ));
+                                },
+                                icon: const ShadImage.square(LucideIcons.trash2,
+                                    size: 18),
+                              ),
                               leading: CircleAvatar(
                                 child: Text(
                                   paciente.name.toUpperCase().substring(0, 1),
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
+                                  style: theme.textTheme.p.copyWith(
                                     fontWeight: FontWeight.bold,
+                                    height: 0,
                                   ),
                                 ),
                               ),
                               title: Text(
-                                paciente.name,
+                                paciente.name.toUpperCase().toString(),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   height: 0,
                                 ),
                               ),
-                              subtitle: Text(paciente.phone.toString()),
+                              subtitle: Text(paciente.relation),
                             );
                           },
                         );
                 }),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class CrearPacientePage extends ConsumerStatefulWidget {
-  const CrearPacientePage({super.key});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _CrearPacientePageState();
-}
-
-class _CrearPacientePageState extends ConsumerState<CrearPacientePage> {
-  ShadDecoration inputDecoration =
-      const ShadDecoration(labelPadding: EdgeInsets.symmetric(horizontal: 5));
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Crear pacientes"),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-              child: ListView(
-            children: [
-              ShadInputFormField(
-                decoration: inputDecoration,
-                label: const Text("Nombre del paciente"),
-              ),
-              ShadInputFormField(
-                decoration: inputDecoration,
-                label: const Text("Nombres del paciente"),
-              ),
-              ShadInputFormField(
-                decoration: inputDecoration,
-                label: const Text("Correo electrónico"),
-                textInputAction: TextInputAction.next,
-              ),
-              ShadInputFormField(
-                decoration: inputDecoration,
-                label: const Text("Contraseña"),
-              ),
-            ],
-          )),
-          ShadButton(
-            onPressed: () {
-              //
-            },
-            width: double.maxFinite,
-            child: const Flexible(child: Text("Agregar paciente")),
           )
         ],
       ),

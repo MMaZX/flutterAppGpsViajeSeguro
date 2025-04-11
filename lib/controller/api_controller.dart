@@ -2,15 +2,17 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Api {
   late final Dio _dio;
 
+  static String apiHost = dotenv.env['API_HOST'].toString();
+  String path = "$apiHost/api";
   Api() {
     _dio = Dio(
       BaseOptions(
-        baseUrl:
-            'http://192.168.2.110/api-alzsafe/public/api', // Cambia esto por la URL de tu API
+        baseUrl: path,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
         headers: {

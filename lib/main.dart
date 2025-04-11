@@ -1,19 +1,17 @@
 import 'dart:developer';
-import 'package:app_viaje_seguro/pages/biometric_page.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'firebase_options.dart';
-// My packages
-import 'package:app_viaje_seguro/config/theme.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
 
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const ProviderContent());
 }
 
@@ -66,7 +64,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // final theme = context.watch<ThemeCubit>();
     return BlocBuilder<ThemeCubit, bool>(
       builder: (context, state) {
         return ShadApp.material(
@@ -77,6 +74,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
               useMaterial3: true,
               colorScheme: theme.colorScheme,
               appBarTheme: AppBarTheme(
+                  centerTitle: true,
                   backgroundColor: theme.colorScheme.primary,
                   foregroundColor: Colors.white,
                   titleTextStyle: const TextStyle(
@@ -103,10 +101,28 @@ class ShadAppTheme {
   getDarkTheme() {
     return ShadThemeData(
       radius: getBorderRadius(),
-      brightness: Brightness.light,
-      colorScheme: ShadColorScheme.fromName(
-        'violet',
-        brightness: Brightness.light,
+      brightness: Brightness.dark,
+      colorScheme: const ShadVioletColorScheme.dark(
+        background: Color(0xff030712),
+        foreground: Color(0xfff9fafb),
+        card: Color(0xff030712),
+        cardForeground: Color(0xfff9fafb),
+        popover: Color(0xff030712),
+        popoverForeground: Color(0xfff9fafb),
+        primary: Color(0xff8333a4),
+        primaryForeground: Color(0xfff9fafb),
+        secondary: Color(0xff1f2937),
+        secondaryForeground: Color(0xfff9fafb),
+        muted: Color(0xff1f2937),
+        mutedForeground: Color(0xff9ca3af),
+        accent: Color(0xff1f2937),
+        accentForeground: Color(0xfff9fafb),
+        destructive: Color(0xff7f1d1d),
+        destructiveForeground: Color(0xfff9fafb),
+        border: Color(0xff1f2937),
+        input: Color(0xff1f2937),
+        ring: Color(0xff8333a4),
+        selection: Color(0xFF355172),
       ),
     );
   }
@@ -114,10 +130,28 @@ class ShadAppTheme {
   getLightTheme() {
     return ShadThemeData(
       radius: getBorderRadius(),
-      brightness: Brightness.dark,
-      colorScheme: ShadColorScheme.fromName(
-        'violet',
-        brightness: Brightness.dark,
+      brightness: Brightness.light,
+      colorScheme: const ShadVioletColorScheme.light(
+        background: Color(0xffffffff),
+        foreground: Color(0xff030712),
+        card: Color(0xffffffff),
+        cardForeground: Color(0xff030712),
+        popover: Color(0xffffffff),
+        popoverForeground: Color(0xff030712),
+        primary: Color(0xff8333a4),
+        primaryForeground: Color(0xfff9fafb),
+        secondary: Color(0xfff3f4f6),
+        secondaryForeground: Color(0xff111827),
+        muted: Color(0xfff3f4f6),
+        mutedForeground: Color(0xff6b7280),
+        accent: Color(0xfff3f4f6),
+        accentForeground: Color(0xff111827),
+        destructive: Color(0xffef4444),
+        destructiveForeground: Color(0xfff9fafb),
+        border: Color(0xffe5e7eb),
+        input: Color(0xffe5e7eb),
+        ring: Color(0xff8333a4),
+        selection: Color(0xFFB4D7FF),
       ),
     );
   }

@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+
+import 'package:flutter/material.dart';
 
 class NotFound404 extends StatelessWidget {
   const NotFound404({super.key});

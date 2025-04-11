@@ -1,9 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:app_viaje_seguro/config/constants.dart';
 import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
+import 'package:app_viaje_seguro/pages/constants.dart';
 import 'package:app_viaje_seguro/pages/home_page.dart';
-import 'package:app_viaje_seguro/widgets/modal_widgets.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,10 +40,12 @@ class _LoginScreenPageState extends ConsumerState<LoginScreenPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
+              getLogo(size: 200),
+              const SizedBox(height: 10),
               Text("Iniciar sesión", style: theme.textTheme.h3),
               ShadInputFormField(
                 decoration: inputPadding,
-                label: const Text("Correo"),
+                label: const Text("Usuario"),
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -82,6 +86,7 @@ class _LoginScreenPageState extends ConsumerState<LoginScreenPage> {
                 width: double.maxFinite,
                 child: const Flexible(child: Text("Iniciar sesión")),
               ),
+              const SizedBox(height: 10),
             ],
           ),
         ),

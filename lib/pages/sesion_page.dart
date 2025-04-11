@@ -1,4 +1,5 @@
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
+import 'package:app_viaje_seguro/pages/constants.dart';
 import 'package:app_viaje_seguro/pages/login_page.dart';
 import 'package:app_viaje_seguro/pages/registrar_page.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
@@ -41,8 +42,7 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                       "ALZSAFE",
                       style: textTheme.h1,
                     ),
-                    Image.asset('assets/logo_base.png'),
-                    const SizedBox(height: 10),
+                    getLogo(size: 200, padding: 15),
                     ShadButton(
                       onPressed: () {
                         Navigator.push(
@@ -90,11 +90,10 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     ShadButton.outline(
                       width: double.maxFinite,
                       onPressed: () {
-                        Navigator.pushAndRemoveUntil(
+                        Navigator.push(
                           context,
                           CupertinoPageRoute(
                               builder: (context) => const RegistrarPage()),
-                          (route) => false,
                         );
                       },
                       child: const Text(

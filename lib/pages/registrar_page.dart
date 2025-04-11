@@ -1,9 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:app_viaje_seguro/config/constants.dart';
 import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/home_page.dart';
-import 'package:app_viaje_seguro/widgets/modal_widgets.dart';
+import 'package:app_viaje_seguro/pages/home_views/paciente_create.dart';
+import 'package:app_viaje_seguro/pages/sesion_page.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -65,6 +68,11 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
             ),
             ShadInputFormField(
               decoration: inputDecoration,
+              label: const Text("Usuario"),
+              onChanged: (value) => bodyModel.user = value,
+            ),
+            ShadInputFormField(
+              decoration: inputDecoration,
               label: const Text("Nombres"),
               onChanged: (value) => bodyModel.name = value,
             ),
@@ -73,11 +81,6 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
               label: const Text("Apellidos"),
               onChanged: (value) => bodyModel.lastName = value,
             ),
-            // ShadInputFormField(
-            //   decoration: inputDecoration,
-            //   label: const Text("Nombre de usuario"),
-            //   onChanged: (value) => bodyModel.email = value,
-            // ),
             SelectedRolUsuario(
               onChanged: (value) {
                 if (value != null) {
@@ -97,7 +100,6 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
 
               onChanged: (value) => bodyModel.identification = value,
             ),
-
             ShadInputFormField(
               decoration: inputDecoration,
               label: const Text("Correo"),
@@ -113,13 +115,43 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
               decoration: inputDecoration,
               label: const Text("Dirección"),
               onChanged: (value) => bodyModel.address = value,
-              obscureText: true,
+            ),
+            ShadInputFormField(
+              decoration: inputDecoration,
+              label: const Text("Edad"),
+              keyboardType: TextInputType.number,
+              onChanged: (p0) {
+                try {
+                  bodyModel.age = int.parse(p0);
+                } catch (e) {
+                  bodyModel.age = 0;
+                }
+              },
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              maxLength: 2,
+            ),
+            SelectedGenero(
+              onChanged: (value) {
+                if (value != null) {
+                  bodyModel.genre = value;
+                }
+              },
+            ),
+            ShadInputFormField(
+              decoration: inputDecoration,
+              label: const Text("Teléfono"),
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              onChanged: (p0) => bodyModel.phone = p0,
             ),
             ShadButton(
               width: double.maxFinite,
               onPressed: () async {
                 showDialogLoading(context);
-
                 bodyModel.country = "PERU";
                 final value = await UsuariosController(context, ref)
                     .createUsuarios(bodyModel);
@@ -127,7 +159,8 @@ class _RegistrarPageState extends ConsumerState<RegistrarPage> {
                 if (value) {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    CupertinoPageRoute(builder: (context) => const HomePage()),
+                    CupertinoPageRoute(
+                        builder: (context) => const SesionPage()),
                     (route) => false,
                   );
                 }
