@@ -19,9 +19,10 @@ class UsuariosController {
   UsuariosController(this.context, this.ref);
 
   final prefs = AuthPrefs();
-  final api = Api().dio;
+
   Future<bool> createUsuarios(BodyCreateUsuarios model) async {
     try {
+      Dio api = Api(ref).dio;
       model.validateUserData();
       final response = await api.post('/auth/register', data: model.toMap());
 
@@ -50,6 +51,7 @@ class UsuariosController {
   Future<bool> authLogin(String email, String password, AuthType tipo,
       {String faceIdToken = ''}) async {
     try {
+      Dio api = Api(ref).dio;
       final response = await api.post('/auth/login', data: {
         "email": email,
         "password": password,
@@ -146,6 +148,7 @@ class UsuariosController {
 
   Future<UsuarioAccessModel> getUsersById() async {
     try {
+      Dio api = Api(ref).dio;
       int id = await AuthPrefs().getId();
       final response = await api.get(
         '/users/id',

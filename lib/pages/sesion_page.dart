@@ -2,6 +2,7 @@ import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/constants.dart';
 import 'package:app_viaje_seguro/pages/login_page.dart';
 import 'package:app_viaje_seguro/pages/registrar_page.dart';
+import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
@@ -25,8 +26,15 @@ class _SesionPageState extends ConsumerState<SesionPage> {
         return Scaffold(
             appBar: AppBar(
               // backgroundColor: Colors.transparent,
-              actions: const [
-                IconChangeTheme(),
+              actions: [
+                ShadButton(
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) => const ConnectionManagerScreen(),
+                  ),
+                  icon: const Icon(LucideIcons.command),
+                ),
+                const IconChangeTheme(),
               ],
             ),
             body: Center(

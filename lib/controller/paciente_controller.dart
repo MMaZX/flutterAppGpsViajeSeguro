@@ -16,10 +16,11 @@ class PacienteController {
   PacienteController(this.context, this.ref);
 
   final prefs = AuthPrefs();
-  final dio = Api().dio;
 
   Future<List<PacientesModel>> getPacientes() async {
     try {
+      Dio dio = Api(ref).dio;
+
       final id = await AuthPrefs().getId();
       final response = await dio.get(
         '/patient/byFamily',
@@ -40,6 +41,8 @@ class PacienteController {
 
   Future<bool> createPacientes(BodyCreatePacientes paciente) async {
     try {
+      Dio dio = Api(ref).dio;
+
       final response = await dio.post(
         '/patient',
         data: paciente.toJson(),
@@ -58,6 +61,8 @@ class PacienteController {
 
   Future<bool> deletePaciente(int id) async {
     try {
+      Dio dio = Api(ref).dio;
+
       final response = await dio.delete(
         '/patient/$id',
         options: await prefs.setDioOptions(),

@@ -1,14 +1,25 @@
+import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Endpoint {
+  final dynamic ref;
   final BuildContext context;
-  Endpoint({required this.context});
+  Endpoint({required this.ref, required this.context});
 
-  static String apiHost = dotenv.env['API_HOST'].toString();
-  String path = "$apiHost/api";
+  String _getPath() {
+    if (ref is Ref || ref is WidgetRef) {
+      final refs = ref as WidgetRef;
+      final notifier = refs.watch(connectionProvider);
+      return notifier.ipAddress;
+    }
+    throw Exception("Ref is not a WidgetRef or Ref");
+  }
+
+  // static String apiHost = dotenv.env['API_HOST'].toString();
 
   String getusuariosCRUD({bool isAction = false, String? id}) {
+    String path = _getPath();
     if (isAction) {
       return "$path/${ContentApi.usuarios}/$id";
     }
@@ -16,10 +27,12 @@ class Endpoint {
   }
 
   String getPath(String content) {
+    String path = _getPath();
     return "$path/$content";
   }
 
   String getPathById(String content, String id) {
+    String path = _getPath();
     return "$path/$content/$id";
   }
 }
@@ -66,10 +79,12 @@ class ApiRoutes {
   static final ApiEndpoint enviarSolicitud = get("/send-familiar");
   static final ApiEndpoint validarPaciente = get("/patientValidate");
   static final ApiEndpoint deleteCuidadorRequest = get("/remove-request");
-  static final ApiEndpoint listaPacientesACuidar = get("/list-notifications-cuidador");
+  static final ApiEndpoint listaPacientesACuidar =
+      get("/list-notifications-cuidador");
   /* # ENDPOITNS CUIDADOR */
 
-  static final ApiEndpoint obtenerListaPacientesPorCuidador = get("/pacientesPorCuidadorId");
+  static final ApiEndpoint obtenerListaPacientesPorCuidador =
+      get("/pacientesPorCuidadorId");
   static final ApiEndpoint obtenerListaFamiliaresPorCuidador =
       get("/familiarPorCuidadorId");
 

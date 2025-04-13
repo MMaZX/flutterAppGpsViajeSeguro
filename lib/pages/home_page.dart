@@ -24,14 +24,6 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  late SocketController socket;
-
-  @override
-  void initState() {
-    super.initState();
-    socket = SocketController(ref: ref, context: context);
-    socket.connectedSocket();
-  }
 
   @override
   Widget build(BuildContext context) {

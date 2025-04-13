@@ -18,11 +18,11 @@ class CuidadorController {
 
   CuidadorController(this.context, this.ref);
 
-  Dio api = Api().dio;
   final prefs = AuthPrefs();
 
   Future<List<CuidadorModel>> getByIdCuidador() async {
     try {
+      Dio api = Api(ref).dio;
       final response = await api.get(
         ApiRoutes.cuidador.prefix,
         options: await prefs.setDioOptions(),
@@ -41,6 +41,7 @@ class CuidadorController {
 
   Future<List<CuidadorRequestValidate>> getCuidadorPresets() async {
     try {
+      Dio api = Api(ref).dio;
       final response = await api.get(
         ApiRoutes.listaDeSolicitudes.prefix,
         options: await prefs.setDioOptions(),
@@ -59,6 +60,8 @@ class CuidadorController {
 
   Future<List<CuidadorModel>> getAllCuidador() async {
     try {
+      Dio api = Api(ref).dio;
+
       final response = await api.get(
         ApiRoutes.cuidador.prefix,
         options: await prefs.setDioOptions(),
@@ -78,6 +81,8 @@ class CuidadorController {
   Future<bool> setInvitacion(
       {required int pacienteId, required int cuidadorId}) async {
     try {
+      Dio api = Api(ref).dio;
+
       final response = await api.post(
         ApiRoutes.enviarSolicitud.prefix,
         data: {
@@ -98,6 +103,8 @@ class CuidadorController {
 
   Future<List<PacienteModelValidacion>> fetchPatientValidate() async {
     try {
+      Dio api = Api(ref).dio;
+
       final response = await api.get(
         ApiRoutes.validarPaciente.prefix,
         options: await prefs.setDioOptions(),
@@ -116,6 +123,8 @@ class CuidadorController {
 
   Future<void> deleteCuidador(int id) async {
     try {
+      Dio api = Api(ref).dio;
+
       final response = await api.post(
         ApiRoutes.deleteCuidadorRequest.prefix,
         data: {
@@ -133,8 +142,11 @@ class CuidadorController {
     }
   }
 
-  Future<List<CuidadorRequestValidate>> obtenerListaCuidador({int status = 2}) async {
+  Future<List<CuidadorRequestValidate>> obtenerListaCuidador(
+      {int status = 2}) async {
     try {
+      Dio api = Api(ref).dio;
+
       final response = await api.get(
         ApiRoutes.listaPacientesACuidar.prefix,
         data: {
@@ -153,10 +165,11 @@ class CuidadorController {
     }
   }
 
-
-    Future<List<FamiliarModelPaciente>> obtenerFamiliaresPorCuidador(
+  Future<List<FamiliarModelPaciente>> obtenerFamiliaresPorCuidador(
       {int status = 2}) async {
     try {
+      Dio api = Api(ref).dio;
+
       final response = await api.get(
         ApiRoutes.obtenerListaFamiliaresPorCuidador.prefix,
         options: await prefs.setDioOptions(),
@@ -172,11 +185,11 @@ class CuidadorController {
     }
   }
 
-  
-
   Future<List<DetalleDataModel>> obtenerPacientesPorCuidador(
       {int status = 2}) async {
     try {
+      Dio api = Api(ref).dio;
+
       final response = await api.get(
         ApiRoutes.obtenerListaPacientesPorCuidador.prefix,
         options: await prefs.setDioOptions(),

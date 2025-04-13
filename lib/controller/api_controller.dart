@@ -1,18 +1,21 @@
 import 'dart:convert';
 import 'dart:developer';
-
+import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Api {
+  final dynamic ref;
+
   late final Dio _dio;
 
-  static String apiHost = dotenv.env['API_HOST'].toString();
-  String path = "$apiHost/api";
-  Api() {
+  // static String apiHost = dotenv.env['API_HOST'].toString();
+  // String path = "$apiHost/api";
+
+  Api(this.ref) {
+    ConnectionState env = ref.watch(connectionProvider);
     _dio = Dio(
       BaseOptions(
-        baseUrl: path,
+        baseUrl: env.ipAddress,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
         headers: {
