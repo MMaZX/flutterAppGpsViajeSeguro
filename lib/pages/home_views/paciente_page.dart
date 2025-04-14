@@ -2,6 +2,7 @@ import 'package:app_viaje_seguro/controller/paciente_controller.dart';
 import 'package:app_viaje_seguro/model/pacientes_model.dart';
 import 'package:app_viaje_seguro/pages/constants.dart';
 import 'package:app_viaje_seguro/pages/home_views/paciente_create.dart';
+import 'package:app_viaje_seguro/pages/home_views/paciente_detalle.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -85,6 +86,12 @@ class _PacientePageState extends ConsumerState<PacientePage> {
                                 icon: const ShadImage.square(LucideIcons.trash2,
                                     size: 18),
                               ),
+                              onTap: () => Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                      builder: (context) =>
+                                          PacientesPageDetalle(
+                                              pacientesModel: paciente))),
                               leading: CircleAvatar(
                                 child: Text(
                                   paciente.name.toUpperCase().substring(0, 1),
@@ -92,6 +99,7 @@ class _PacientePageState extends ConsumerState<PacientePage> {
                                   style: theme.textTheme.p.copyWith(
                                     fontWeight: FontWeight.bold,
                                     height: 0,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),

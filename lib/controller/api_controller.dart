@@ -41,7 +41,7 @@ class ApiInterceptors extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     log('✅ Respuesta recibida: ${response.statusCode}');
-    // log('🚀🚀 Body: ${response.data}');
+    log('🚀🚀 Body: ${response.data}');
     super.onResponse(response, handler);
   }
 
