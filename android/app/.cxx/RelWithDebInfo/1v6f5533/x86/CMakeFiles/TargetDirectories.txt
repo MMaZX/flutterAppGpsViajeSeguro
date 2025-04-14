@@ -1,0 +1,2 @@
+C:/Users/qemu/Documents/projects/appalzafe/android/app/.cxx/RelWithDebInfo/1v6f5533/x86/CMakeFiles/edit_cache.dir
+C:/Users/qemu/Documents/projects/appalzafe/android/app/.cxx/RelWithDebInfo/1v6f5533/x86/CMakeFiles/rebuild_cache.dir

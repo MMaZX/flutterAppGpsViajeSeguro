@@ -138,7 +138,7 @@ class ExceptionsUtils implements Exception {
     return {
       "statusCode": 0,
       "message":
-          "Ha ocurrido un error al momento de ejecutar la solicitud al servidor. Por favor, intente nuevamente.",
+          "Ha ocurrido un error al momento de ejecutar la solicitud al servidor. Por favor, intente nuevamente. ${e.toString()}",
     };
   }
 
@@ -201,7 +201,6 @@ class ExceptionsUtils implements Exception {
 }
 
  */
-
 
 class NotFoundException implements Exception {
   final String e;
