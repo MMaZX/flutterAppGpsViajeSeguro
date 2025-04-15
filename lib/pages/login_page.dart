@@ -5,6 +5,7 @@ import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/constants.dart';
 import 'package:app_viaje_seguro/pages/home_page.dart';
+import 'package:app_viaje_seguro/provider/google_auth.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class _LoginScreenPageState extends ConsumerState<LoginScreenPage> {
 
   final inputPadding =
       const ShadDecoration(labelPadding: EdgeInsets.symmetric(horizontal: 5));
+
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);

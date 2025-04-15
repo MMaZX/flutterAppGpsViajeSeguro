@@ -1,101 +1,167 @@
+import 'package:app_viaje_seguro/provider/geolocator_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart'; // Para clustering de marcadores
-import 'package:flutter_map_cache/flutter_map_cache.dart'; // Para caché de tiles
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart' as geolocator;
 
-class MapScreen extends StatefulWidget {
+class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
 
   @override
-  State<MapScreen> createState() => _MapScreenState();
+  ConsumerState<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
-  final MapController _mapController = MapController();
-  List<Marker> _markers = [];
-  final int _numMarkers = 1000;
+class _MapScreenState extends ConsumerState<MapScreen> {
+  MapboxMap? mapboxMap;
 
   @override
   void initState() {
     super.initState();
-    _generateRandomMarkers(_numMarkers);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(locationProvider.notifier).requestLocationPermission();
+    });
   }
 
-  void _generateRandomMarkers(int count) {
-    final random = DateTime.now().millisecondsSinceEpoch;
-    for (int i = 0; i < count; i++) {
-      final lat = -90 + 180 * (random % (i + 1)) / (i + 1);
-      final lng = -180 + 360 * ((random + i) % (i + 1)) / (i + 1);
-      _markers.add(
-        Marker(
-          width: 30,
-          height: 30,
-          point: LatLng(lat, lng),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: const Icon(Icons.location_on, color: Colors.white),
-          ),
-          // builder: (ctx) => const Icon(Icons.location_pin, color: Colors.red),
-        ),
+  void _onMapCreated(MapboxMap mapboxMap) {
+    this.mapboxMap = mapboxMap;
+
+    // Configurar ubicación
+    mapboxMap.location.updateSettings(
+      LocationComponentSettings(
+        enabled: true,
+        puckBearingEnabled: true,
+        showAccuracyRing: true,
+        pulsingEnabled: true,
+      ),
+    );
+  }
+
+  Future<void> _obtenerUbicacionYActualizarMapa() async {
+    try {
+      final pos = await geolocator.Geolocator.getCurrentPosition(
+        desiredAccuracy: geolocator.LocationAccuracy.high,
       );
+
+      final point = Point(coordinates: Position(pos.longitude, pos.latitude));
+      print("🧭 Ubicación actual: Lat: ${pos.latitude}, Lng: ${pos.longitude}");
+
+      // Actualizar en Riverpod
+      ref.read(locationProvider.notifier).updateUserPosition(point);
+
+      // Centrar el mapa
+      mapboxMap?.flyTo(
+        CameraOptions(center: point, zoom: 14.0),
+        MapAnimationOptions(duration: 1500),
+      );
+    } catch (e) {
+      print("❌ Error obteniendo ubicación: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final locationState = ref.watch(locationProvider);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter Map - Rendimiento')),
-      body: FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-            maxZoom: 18,
-            // initialCenter: locationNow,
-            initialZoom: 18,
-            onTap: (tapPosition, point) {
-              // ref.read(listMarketContainerProvider).add(point);
-            }),
+      appBar: AppBar(title: const Text('Mapa con ubicación')),
+      body: Column(
         children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.example.ALZSAFE',
-            tileProvider: NetworkTileProvider(),
-          ),
-          // Uso de MarkerClusterLayer para manejar grandes cantidades de marcadores
-          MarkerClusterLayerWidget(
-            options: MarkerClusterLayerOptions(
-              maxClusterRadius: 120,
-              disableClusteringAtZoom:
-                  16, // Deshabilitar clustering a zoom alto
-              size: const Size(40, 40),
-              // anchor: AnchorPos.align(AnchorAlign.center),
-              builder: (context, markers) {
-                return Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.blue.withOpacity(0.7)),
-                  child: Center(
-                    child: Text(
-                      markers.length.toString(),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                );
-              },
+          Expanded(
+            child: MapWidget(
+              key: const ValueKey("mapWidget"),
+              onMapCreated: _onMapCreated,
+              cameraOptions: CameraOptions(
+                center: locationState.position ??
+                    Point(coordinates: Position(-98.0, 39.5)),
+                zoom: 14.0,
+              ),
+              styleUri: MapboxStyles.LIGHT,
             ),
-            // markers: _markers,
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Estado de permisos: ${locationState.hasPermission ? "Concedido" : "No concedido"}',
+                ),
+                if (locationState.position != null)
+                  Text(
+                    'Ubicación actual: Lat: ${locationState.position!.coordinates.lat}, '
+                    'Lng: ${locationState.position!.coordinates.lng}',
+                  ),
+                ElevatedButton(
+                  onPressed: () => ref
+                      .read(locationProvider.notifier)
+                      .requestLocationPermission(),
+                  child: const Text('Solicitar permisos'),
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _mapController.move(const LatLng(-12.0900, -77.0283), 12);
-        },
-        child: const Icon(Icons.my_location),
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.my_location),
+        label: const Text('Mi ubicación'),
+        onPressed: _obtenerUbicacionYActualizarMapa,
       ),
     );
   }
 }
+
+// Modelo para almacenar la ubicación
+class UserLocation {
+  final Point? position;
+  final bool hasPermission;
+  final bool isLoading;
+
+  UserLocation({
+    this.position,
+    this.hasPermission = false,
+    this.isLoading = false,
+  });
+
+  UserLocation copyWith({
+    Point? position,
+    bool? hasPermission,
+    bool? isLoading,
+  }) {
+    return UserLocation(
+      position: position ?? this.position,
+      hasPermission: hasPermission ?? this.hasPermission,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+}
+
+// StateNotifier para manejar la ubicación
+class LocationNotifier extends StateNotifier<UserLocation> {
+  LocationNotifier() : super(UserLocation(isLoading: false));
+
+  // Solicitar permisos de ubicación
+  Future<void> requestLocationPermission() async {
+    state = state.copyWith(isLoading: true);
+
+    var status = await Permission.locationWhenInUse.request();
+    state = state.copyWith(
+      hasPermission: status.isGranted,
+      isLoading: false,
+    );
+  }
+
+  // Actualizar la posición del usuario (esto se llamaría desde el mapa)
+  void updateUserPosition(Point position) {
+    state = state.copyWith(position: position);
+  }
+}
+
+// Provider para el StateNotifier
+final locationProvider =
+    StateNotifierProvider<LocationNotifier, UserLocation>((ref) {
+  return LocationNotifier();
+});

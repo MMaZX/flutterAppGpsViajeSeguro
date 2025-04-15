@@ -2,6 +2,7 @@ import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/constants.dart';
 import 'package:app_viaje_seguro/pages/login_page.dart';
 import 'package:app_viaje_seguro/pages/registrar_page.dart';
+import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
@@ -18,6 +19,47 @@ class SesionPage extends ConsumerStatefulWidget {
 }
 
 class _SesionPageState extends ConsumerState<SesionPage> {
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
+
+  bool _isLoading = false;
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final account = await _googleAuthService.signIn();
+
+      if (account != null) {
+        // Obtén los datos del usuario para enviar al backend
+        final userData = _googleAuthService.getUserData(account);
+
+        // Aquí puedes enviar los datos al backend
+        await _sendUserDataToBackend(userData);
+
+        // Navega a la pantalla principal o home después de autenticar
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _sendUserDataToBackend(Map<String, dynamic> userData) async {
+    // Implementa aquí la lógica para enviar los datos al backend
+    // Ejemplo usando http:
+    // final response = await http.post(
+    //   Uri.parse('https://tu-backend.com/api/auth/google'),
+    //   headers: {'Content-Type': 'application/json'},
+    //   body: jsonEncode(userData),
+    // );
+
+    print('Enviando datos al backend: $userData');
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = ShadTheme.of(context).textTheme;
@@ -110,6 +152,12 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
+
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : GoogleSignInButton(
+                            onPressed: _handleGoogleSignIn,
+                          ),
                   ],
                 ),
               ),

@@ -23,17 +23,34 @@ class _CrearCuidadorPageState extends ConsumerState<CrearCuidadorPage> {
 
   @override
   void initState() {
+    // getUserCuidadores();
     super.initState();
-    getUserCuidadores();
   }
 
-  getUserCuidadores() async {
-    pacientesAll.clear();
-    final watch = await CuidadorController(context, ref).getAllCuidador();
-    setState(() {
-      pacientesAll = watch;
-      pacienteOriginal = watch;
-    });
+  void getUserCuidadores() async {
+    try {
+      pacientesAll.clear();
+      final controller = CuidadorController(context, ref);
+      final watch = await controller.getAllCuidador();
+      setState(() {
+        pacientesAll = watch;
+        pacienteOriginal = watch;
+      });
+    } catch (e) {
+      print(e);
+      showDialogScope(context, ExceptionsUtils(e).toString());
+    }
+  }
+
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      getUserCuidadores();
+      _initialized = true;
+    }
   }
 
   searchCuidadores(String query) async {
@@ -127,7 +144,7 @@ class _DialogConfirmarPacienteState
   @override
   void initState() {
     super.initState();
-    _loadPacientes();
+    // _loadPacientes();
   }
 
   Future<void> _loadPacientes() async {
@@ -137,6 +154,14 @@ class _DialogConfirmarPacienteState
         pacientes = data;
         isLoading = false;
       });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (pacientes.isEmpty) {
+      _loadPacientes();
     }
   }
 
@@ -202,6 +227,7 @@ class _DialogConfirmarPacienteState
           child: const Text("Cancelar"),
         ),
         ShadButton(
+          enabled: selectedPacienteId != 0,
           onPressed: selectedPacienteId == 0
               ? null
               : () async {

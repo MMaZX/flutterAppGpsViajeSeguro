@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Api {
   final dynamic ref;
@@ -12,19 +13,23 @@ class Api {
   // String path = "$apiHost/api";
 
   Api(this.ref) {
-    ConnectionState env = ref.watch(connectionProvider);
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: env.ipAddress,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        headers: {
-          'Accept': 'application/json',
-        },
-      ),
-    );
+    if (ref is Ref || ref is WidgetRef) {
+      ConnectionState env = ref.watch(connectionProvider);
+      _dio = Dio(
+        BaseOptions(
+          baseUrl: env.ipAddress,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+          headers: {
+            'Accept': 'application/json',
+          },
+        ),
+      );
 
-    _dio.interceptors.add(ApiInterceptors());
+      _dio.interceptors.add(ApiInterceptors());
+    } else {
+      throw Exception("Invalid ref type. Expected Ref or WidgetRef.");
+    }
   }
 
   Dio get dio => _dio;

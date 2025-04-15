@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import 'package:shadcn_ui/shadcn_ui.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  String ACCESS_TOKEN =
+      "pk.eyJ1IjoiamVhc29uY3VlcyIsImEiOiJjbTJ1bnQ5cTYwMzl5MmlvaW5mY29vOHFhIn0.SRxhLbsSJ0F6GRL5mKXULA";
+  MapboxOptions.setAccessToken(ACCESS_TOKEN);
   // await dotenv.load(fileName: ".env");
   runApp(const ProviderContent());
 }
