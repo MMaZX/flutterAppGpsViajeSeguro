@@ -5,6 +5,7 @@ import 'package:app_viaje_seguro/config/shared_preferences.dart';
 import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/model/usuario_model.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
+import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 // import 'package:dio/dio.dart';
@@ -19,6 +20,32 @@ class UsuariosController {
   UsuariosController(this.context, this.ref);
 
   final prefs = AuthPrefs();
+
+  Future<bool> updateUsuario(UsuarioModelData data, String password) async {
+    try {
+      final api = Api(ref).dio;
+      final response = await api.put(
+        '/users/update',
+        data: data.toJson(password),
+        options: await prefs.setDioOptions(),
+      );
+      print(response.data);
+
+      Navigator.pushAndRemoveUntil(
+          context,
+          CupertinoPageRoute(
+            builder: (context) => const SesionPage(),
+          ),
+          (route) => false);
+      showDialogResponse(
+          context, "Se cerró sesión, vuelve a entrar.", Container());
+
+      return true;
+    } catch (e) {
+      showDialogScope(context, ExceptionsUtils(e.toString()));
+      return false;
+    }
+  }
 
   Future<bool> createUsuarios(BodyCreateUsuarios model) async {
     try {
@@ -146,7 +173,7 @@ class UsuariosController {
     }
   }
 
-  Future<UsuarioAccessModel> getUsersById() async {
+  Future<UsuarioModelData> getUsersById() async {
     try {
       Dio api = Api(ref).dio;
       int id = await AuthPrefs().getId();
@@ -159,7 +186,7 @@ class UsuariosController {
       );
       final json = response.data;
       // print(json);
-      return UsuarioAccessModel.fromJson(json);
+      return UsuarioModelData.fromJson(json);
     } catch (e) {
       throw ExceptionsUtils(e).toString();
     }

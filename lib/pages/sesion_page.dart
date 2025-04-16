@@ -1,5 +1,10 @@
+import 'package:app_viaje_seguro/config/constants.dart';
+import 'package:app_viaje_seguro/controller/api_controller.dart';
+import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/constants.dart';
+import 'package:app_viaje_seguro/pages/formulario_sesion_google_page.dart';
+import 'package:app_viaje_seguro/pages/home_page.dart';
 import 'package:app_viaje_seguro/pages/login_page.dart';
 import 'package:app_viaje_seguro/pages/registrar_page.dart';
 import 'package:app_viaje_seguro/provider/google_auth.dart';
@@ -19,45 +24,72 @@ class SesionPage extends ConsumerStatefulWidget {
 }
 
 class _SesionPageState extends ConsumerState<SesionPage> {
-  final GoogleAuthService _googleAuthService = GoogleAuthService();
-
   bool _isLoading = false;
 
   Future<void> _handleGoogleSignIn() async {
+    final googleAuthService = GoogleAuthService(ref);
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final account = await _googleAuthService.signIn();
+      final account = await googleAuthService.signIn();
 
       if (account != null) {
         // Obtén los datos del usuario para enviar al backend
-        final userData = _googleAuthService.getUserData(account);
-
         // Aquí puedes enviar los datos al backend
-        await _sendUserDataToBackend(userData);
+        // await _sendUserDataToBackend();
 
-        // Navega a la pantalla principal o home después de autenticar
-        Navigator.of(context).pushReplacementNamed('/home');
+        try {
+          final dio = Api(ref).dio;
+          final response = await dio.post(
+            '/auth/google',
+            data: {
+              'email': account.email,
+            },
+          );
+
+          final json = response.data;
+          final users = LoginResponse.fromJson(json['data']);
+          if (users.token.isNotEmpty) {
+            final controller = UsuariosController(context, ref);
+            controller.setCorreo(users.user.email);
+            controller.setTipoRol(users.user.rol);
+            controller.setId(users.user.id.toString());
+
+            // OTROS DATOS
+            // controller.setFaceid(faceIdToken);
+            controller.setTipoAuth("google");
+            controller.setToken(users.token);
+            Navigator.pushAndRemoveUntil(
+              context,
+              CupertinoPageRoute(builder: (context) => const HomePage()),
+              (route) => false,
+            );
+            return;
+          }
+        } catch (e) {
+          if (ExceptionsUtils(e).toString().toLowerCase().contains("faltan")) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              CupertinoPageRoute(
+                builder: (context) =>
+                    FormularioSesionGooglePage(account: account),
+              ),
+              (route) => false,
+            );
+          } else {
+            rethrow;
+          }
+        }
       }
+    } catch (e) {
+      showDialogScope(context, ExceptionsUtils(e).toString());
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
-  }
-
-  Future<void> _sendUserDataToBackend(Map<String, dynamic> userData) async {
-    // Implementa aquí la lógica para enviar los datos al backend
-    // Ejemplo usando http:
-    // final response = await http.post(
-    //   Uri.parse('https://tu-backend.com/api/auth/google'),
-    //   headers: {'Content-Type': 'application/json'},
-    //   body: jsonEncode(userData),
-    // );
-
-    print('Enviando datos al backend: $userData');
   }
 
   @override
@@ -93,6 +125,8 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                       style: textTheme.h1,
                     ),
                     getLogo(size: 200, padding: 15),
+
+                    const SizedBox(height: 30),
                     ShadButton(
                       onPressed: () {
                         Navigator.push(
@@ -151,6 +185,20 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
+                    ),
+
+                    Row(
+                      children: [
+                        const Expanded(
+                            child: Opacity(opacity: 0.4, child: Divider())),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 10),
+                          child: const Text("O continua con"),
+                        ),
+                        const Expanded(
+                            child: Opacity(opacity: 0.4, child: Divider())),
+                      ],
                     ),
 
                     _isLoading

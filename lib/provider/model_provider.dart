@@ -4,6 +4,8 @@ import 'package:app_viaje_seguro/pages/home_page.dart';
 import 'package:app_viaje_seguro/pages/home_views/cuidador_page.dart';
 import 'package:app_viaje_seguro/pages/home_views/familiar/familiar_page.dart';
 import 'package:app_viaje_seguro/pages/home_views/paciente_page.dart';
+import 'package:app_viaje_seguro/pages/pacientes/cuidador_paciente_page.dart';
+import 'package:app_viaje_seguro/pages/pacientes/familiar_paciente_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/notificaciones_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/ubicacion_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +24,25 @@ final getDashboardMenuItemsProvider =
     return menuHomeItemsFamiliar;
   } else if (rol == RolUsuario.paciente.name) {
     return menuHomeItemsPacientes;
+  }
+  // Si no coincide con ninguno de los roles, puedes manejarlo como desees
+
+  return [];
+});
+
+final getBottomMenuItemsProvider =
+    FutureProvider.autoDispose<List<CustomModelMenu>>((ref) async {
+  String watch = await AuthPrefs().getTipoRol();
+  print("getDashboardMenuItemsProvider: $watch");
+  String rol = watch.trim().toLowerCase();
+  if (rol == RolUsuario.admin.name) {
+    return bottomItemsAdmin;
+  } else if (rol == RolUsuario.cuidador.name) {
+    return bottomItemsCuidador;
+  } else if (rol == RolUsuario.familiar.name) {
+    return bottomItemsFamiliar;
+  } else if (rol == RolUsuario.paciente.name) {
+    return bottomItemsPacientes;
   }
   // Si no coincide con ninguno de los roles, puedes manejarlo como desees
 
@@ -59,26 +80,26 @@ final List<CustomModelMenu> menuHomeItemsAdmin = [
 ];
 
 final List<CustomModelMenu> menuHomeItemsPacientes = [
-  CustomModelMenu(
-    iconData: LucideIcons.mapPin,
-    nombre: 'Ubicación',
-    widget: const UbicacionIndexPage(),
-  ),
+  // CustomModelMenu(
+  //   iconData: LucideIcons.mapPin,
+  //   nombre: 'Ubicación',
+  //   widget: const UbicacionIndexPage(),
+  // ),
   CustomModelMenu(
     iconData: LucideIcons.usersRound,
     nombre: 'Familiar',
-    widget: const FamiliarPage(),
+    widget: const FamiliarPacientePage(),
   ),
   CustomModelMenu(
     iconData: LucideIcons.briefcaseMedical,
     nombre: 'Cuidador',
-    widget: const CuidadorPage(),
+    widget: const CuidadorPacientePage(),
   ),
-  CustomModelMenu(
-    iconData: LucideIcons.bell,
-    nombre: 'Notificaciones',
-    widget: const NotificacionIndexPage(),
-  ),
+  // CustomModelMenu(
+  //   iconData: LucideIcons.bell,
+  //   nombre: 'Notificaciones',
+  //   widget: const NotificacionIndexPage(),
+  // ),
 ];
 
 final List<CustomModelMenu> menuHomeItemsCuidador = [
@@ -124,5 +145,85 @@ final List<CustomModelMenu> menuHomeItemsFamiliar = [
     iconData: LucideIcons.bell,
     nombre: 'Notificaciones',
     widget: const NotificacionIndexPage(),
+  ),
+];
+
+/*
+AQUI LAS LISTAS POR CADA BOTTOM
+ */
+
+final List<CustomModelMenu> bottomItemsPacientes = [
+  CustomModelMenu(
+    iconData: LucideIcons.house,
+    nombre: 'Inicio',
+  ),
+  // CustomModelMenu(
+  //   iconData: LucideIcons.mapPin,
+  //   nombre: 'Ubicación',
+  // ),
+  CustomModelMenu(
+    iconData: LucideIcons.user,
+    nombre: 'Usuario',
+  ),
+  // CustomModelMenu(
+  //   iconData: LucideIcons.bell,
+  //   nombre: 'Notificaciones',
+  // ),
+];
+
+final List<CustomModelMenu> bottomItemsAdmin = [
+  CustomModelMenu(
+    iconData: LucideIcons.house,
+    nombre: 'Inicio',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.mapPin,
+    nombre: 'Ubicación',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.user,
+    nombre: 'Usuario',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.bell,
+    nombre: 'Notificaciones',
+  ),
+];
+
+final List<CustomModelMenu> bottomItemsCuidador = [
+  CustomModelMenu(
+    iconData: LucideIcons.house,
+    nombre: 'Inicio',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.mapPin,
+    nombre: 'Ubicación',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.user,
+    nombre: 'Usuario',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.bell,
+    nombre: 'Notificaciones',
+  ),
+];
+
+final List<CustomModelMenu> bottomItemsFamiliar = [
+  CustomModelMenu(
+    iconData: LucideIcons.house,
+    nombre: 'Inicio',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.mapPin,
+    nombre: 'Ubicación',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.user,
+    nombre: 'Usuario',
+  ),
+  CustomModelMenu(
+    iconData: LucideIcons.bell,
+    nombre: 'Notificaciones',
   ),
 ];

@@ -1,4 +1,5 @@
 import 'package:app_viaje_seguro/model/pacientes_model.dart';
+import 'package:app_viaje_seguro/widgets/custom_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -16,62 +17,84 @@ class _PacientesPageDetalleState extends ConsumerState<PacientesPageDetalle> {
   @override
   Widget build(BuildContext context) {
     PacientesModel paciente = widget.pacientesModel;
+    final themeApp = ShadTheme.of(context);
     final theme = ShadTheme.of(context).textTheme;
+
     return Scaffold(
         appBar: AppBar(
           title: const Text("Detalles del Paciente"),
         ),
         body: ListView(
+          padding: const EdgeInsets.all(15),
           children: [
-            ListTile(
-              title: Text(
-                "Nombre del paciente",
-                style: theme.p.copyWith(height: 0, fontWeight: FontWeight.bold),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  colors: [
+                    themeApp.colorScheme.primary,
+                    themeApp.colorScheme.accent,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomRight,
+                ),
               ),
-              subtitle: Text(paciente.name),
-            ),
-            ListTile(
-              title: Text(
-                "Edad",
-                style: theme.p.copyWith(height: 0, fontWeight: FontWeight.bold),
+              // height: 150,
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 5,
+                  horizontal: 20,
+                ),
+                leading: CircleAvatar(
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  child: const ShadImage.square(
+                    LucideIcons.user,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+                ),
+                title: Text(paciente.name.toUpperCase(),
+                    style: theme.p.copyWith(
+                      height: 0,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    )),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ShadBadge(
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      child: const Text("Activo"),
+                    ),
+                  ],
+                ),
               ),
-              subtitle: Text('${paciente.age} años'),
             ),
-            ListTile(
-              title: Text(
-                "Género",
-                style: theme.p.copyWith(height: 0, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(paciente.genre),
-            ),
-            ListTile(
-              title: Text(
-                "Teléfono",
-                style: theme.p.copyWith(height: 0, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(paciente.phone ?? "No disponible"),
-            ),
-            ListTile(
-              title: Text(
-                "Dirección",
-                style: theme.p.copyWith(height: 0, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(paciente.address ?? "No disponible"),
-            ),
-            ListTile(
-              title: Text(
-                "Relación",
-                style: theme.p.copyWith(height: 0, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(paciente.relation),
-            ),
-            ListTile(
-              title: Text(
-                "Estado",
-                style: theme.p.copyWith(height: 0, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(paciente.status == 1 ? "Activo" : "Inactivo"),
-            ),
+            CardCustom(
+                iconData: LucideIcons.calendar,
+                title: "Edad",
+                subtitle: "${paciente.age} años"),
+            CardCustom(
+                iconData: LucideIcons.users,
+                title: "Género",
+                subtitle: paciente.genre),
+            CardCustom(
+                iconData: LucideIcons.phoneCall,
+                title: "Celular",
+                subtitle: paciente.phone ?? "No disponible"),
+            CardCustom(
+                iconData: LucideIcons.map,
+                title: "Dirección",
+                subtitle: paciente.address ?? "No disponible"),
+            CardCustom(
+                iconData: LucideIcons.heart,
+                title: "Relación",
+                subtitle: paciente.relation),
+            CardCustom(
+                iconData: LucideIcons.shieldCheck,
+                title: "Estado",
+                subtitle: paciente.status == 1 ? "Activo" : "Inactivo"),
           ],
         ));
   }

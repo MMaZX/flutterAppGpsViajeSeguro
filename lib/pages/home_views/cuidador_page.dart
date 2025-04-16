@@ -40,106 +40,114 @@ class _CuidadorPageState extends ConsumerState<CuidadorPage> {
         },
         child: const ShadImage.square(LucideIcons.userPlus, size: 24),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: FutureCustomWidget(
-                future: controller.getCuidadorPresets(),
-                widgetBuilder: (context, snapshot) {
-                  List<CuidadorRequestValidate> listaPacientes = snapshot.data;
-                  return listaPacientes.isEmpty
-                      ? const EmptyWidget(
-                          "No tienes algún cuidador agregado, puedes agregar uno.")
-                      : ListView.builder(
-                          itemCount: listaPacientes.length,
-                          itemBuilder: (context, index) {
-                            CuidadorRequestValidate paciente =
-                                listaPacientes[index];
-                            return ListTile(
-                              tileColor: paciente.status == 0
-                                  ? Colors.redAccent.shade700
-                                  : null,
-                              trailing: paciente.status == 0
-                                  ? null
-                                  : ShadButton.secondary(
-                                      onPressed: () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) =>
-                                                CupertinoAlertDialog(
-                                                  title: Text(
-                                                    paciente.status == 1
-                                                        ? "Eliminar solicitud enviada"
-                                                        : "Eliminar Cuidador",
-                                                  ),
-                                                  content: const Text(
-                                                      "¿Estás seguro de eliminar?"),
-                                                  actions: [
-                                                    CupertinoDialogAction(
-                                                      child: const Text(
-                                                          "Cancelar"),
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      },
+      body: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          children: [
+            Expanded(
+              child: FutureCustomWidget(
+                  future: controller.getCuidadorPresets(),
+                  widgetBuilder: (context, snapshot) {
+                    List<CuidadorRequestValidate> listaPacientes =
+                        snapshot.data;
+                    return listaPacientes.isEmpty
+                        ? const EmptyWidget(
+                            "No tienes algún cuidador agregado, puedes agregar uno.")
+                        : ListView.builder(
+                            itemCount: listaPacientes.length,
+                            itemBuilder: (context, index) {
+                              CuidadorRequestValidate paciente =
+                                  listaPacientes[index];
+                              return ListTile(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                tileColor: paciente.status == 0
+                                    ? Colors.redAccent.shade700
+                                    : null,
+                                trailing: paciente.status == 0
+                                    ? null
+                                    : ShadButton.secondary(
+                                        onPressed: () {
+                                          showDialog(
+                                              context: context,
+                                              builder: (context) =>
+                                                  CupertinoAlertDialog(
+                                                    title: Text(
+                                                      paciente.status == 1
+                                                          ? "Eliminar solicitud enviada"
+                                                          : "Eliminar Cuidador",
                                                     ),
-                                                    CupertinoDialogAction(
-                                                      child: const Text(
-                                                          "Eliminar"),
-                                                      onPressed: () {
-                                                        isBackReturn(context);
-                                                        // showDialogLoading(
-                                                        //     context);
-                                                        CuidadorController(
-                                                                context, ref)
-                                                            .deleteCuidador(
-                                                                paciente.id);
-                                                        setState(() {});
-                                                      },
-                                                    ),
-                                                  ],
-                                                ));
-                                      },
-                                      icon: const ShadImage.square(
-                                          LucideIcons.trash2,
-                                          size: 18),
+                                                    content: const Text(
+                                                        "¿Estás seguro de eliminar?"),
+                                                    actions: [
+                                                      CupertinoDialogAction(
+                                                        child: const Text(
+                                                            "Cancelar"),
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                      ),
+                                                      CupertinoDialogAction(
+                                                        child: const Text(
+                                                            "Eliminar"),
+                                                        onPressed: () {
+                                                          isBackReturn(context);
+                                                          // showDialogLoading(
+                                                          //     context);
+                                                          CuidadorController(
+                                                                  context, ref)
+                                                              .deleteCuidador(
+                                                                  paciente.id);
+                                                          setState(() {});
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ));
+                                        },
+                                        icon: const ShadImage.square(
+                                            LucideIcons.trash2,
+                                            size: 18),
+                                      ),
+                                leading: CircleAvatar(
+                                  child: Text(
+                                    paciente.carer!.name
+                                        .toUpperCase()
+                                        .substring(0, 1),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
                                     ),
-                              leading: CircleAvatar(
-                                child: Text(
-                                  paciente.carer!.name
-                                      .toUpperCase()
-                                      .substring(0, 1),
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                              onTap: () => Navigator.push(
-                                  context,
-                                  CupertinoPageRoute(
-                                    builder: (context) =>
-                                        CuidadorPerfil(paciente.carer!),
-                                  )),
-                              title: Text(
-                                paciente.carer!.name.toUpperCase(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  height: 0,
+                                onTap: () => Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) =>
+                                          CuidadorPerfil(paciente.carer!),
+                                    )),
+                                title: Text(
+                                  paciente.carer!.name.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    height: 0,
+                                  ),
                                 ),
-                              ),
-                              // subtitle: Text(paciente.phone.toString()),
-                              subtitle: Text(
-                                "SOLICITUD ${paciente.nameStatus} para ${paciente.patient!.name.toUpperCase()} | +51 ${paciente.carer!.phone}",
-                                style: theme.textTheme.muted.copyWith(
-                                  fontSize: 13,
+                                // subtitle: Text(paciente.phone.toString()),
+                                subtitle: Text(
+                                  "SOLICITUD ${paciente.nameStatus} para ${paciente.patient!.name.toUpperCase()} | +51 ${paciente.carer!.phone}",
+                                  style: theme.textTheme.muted.copyWith(
+                                    fontSize: 13,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                }),
-          )
-        ],
+                              );
+                            },
+                          );
+                  }),
+            )
+          ],
+        ),
       ),
     );
   }

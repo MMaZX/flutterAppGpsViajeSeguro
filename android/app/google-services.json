@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "690790414473",
-    "project_id": "appviajesegurobas",
-    "storage_bucket": "appviajesegurobas.appspot.com"
+    "project_number": "416795776397",
+    "project_id": "alzsafe-4598d",
+    "storage_bucket": "alzsafe-4598d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:690790414473:android:f369bfd4120afcd051ae58",
+        "mobilesdk_app_id": "1:416795776397:android:9cce7a13f9ea5ca126d9c4",
         "android_client_info": {
           "package_name": "com.example.ALZSAFE"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "416795776397-p8k43bmrv5h5lhntv06lrjc8q6ks21vo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCoT0bXOYjU8HfemMU3-TEJR7b4Xjhle5I"
+          "current_key": "AIzaSyD8Qb6IkJOM5U70MrV_RZBhMb5YribrtRY"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "416795776397-p8k43bmrv5h5lhntv06lrjc8q6ks21vo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

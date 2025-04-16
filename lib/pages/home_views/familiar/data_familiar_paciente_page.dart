@@ -1,4 +1,5 @@
 import 'package:app_viaje_seguro/model/familiar_model.dart';
+import 'package:app_viaje_seguro/widgets/custom_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -31,30 +32,76 @@ class _DataFamiliarPacientePageState
         title: const Text("Datos del Familiar"),
       ),
       body: ListView(
+        padding: const EdgeInsets.all(10),
         children: [
-          ListTile(
-            title: const Text("Nombre"),
-            subtitle: Text(familiar.name.toUpperCase()),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.accent,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            // height: 150,
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 5,
+                horizontal: 20,
+              ),
+              leading: CircleAvatar(
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                child: const ShadImage.square(
+                  LucideIcons.user,
+                  size: 20,
+                  color: Colors.white,
+                ),
+              ),
+              title: Text(familiar.name.toUpperCase(),
+                  style: theme.textTheme.p.copyWith(
+                    height: 0,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  )),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  ShadBadge(
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    child: const Text("Activo"),
+                  ),
+                ],
+              ),
+            ),
           ),
-          ListTile(
-            title: const Text("Apellido"),
-            subtitle: Text(familiar.lastName.toUpperCase()),
+          CardCustom(
+            iconData: LucideIcons.user,
+            title: "Apellido",
+            subtitle: familiar.lastName.toUpperCase(),
           ),
-          ListTile(
-            title: const Text("Email"),
-            subtitle: Text(familiar.email),
+          CardCustom(
+            iconData: LucideIcons.mail,
+            title: "Email",
+            subtitle: familiar.email,
           ),
-          ListTile(
-            title: const Text("DNI"),
-            subtitle: Text(familiar.identification),
+          CardCustom(
+            iconData: LucideIcons.idCard,
+            title: "DNI",
+            subtitle: familiar.identification,
           ),
-          ListTile(
-            title: const Text("País"),
-            subtitle: Text(familiar.country),
+          CardCustom(
+            iconData: LucideIcons.mapPin,
+            title: "País",
+            subtitle: familiar.country,
           ),
-          ListTile(
-            title: const Text("Dirección"),
-            subtitle: Text(familiar.address),
+          CardCustom(
+            iconData: LucideIcons.map,
+            title: "Dirección",
+            subtitle: familiar.address,
           ),
           const Divider(),
           ListTile(

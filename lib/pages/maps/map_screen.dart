@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -63,6 +64,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider);
 
+    final theme = ShadTheme.of(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Mapa con ubicación')),
       body: Column(
@@ -76,40 +79,46 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     Point(coordinates: Position(-98.0, 39.5)),
                 zoom: 14.0,
               ),
-              styleUri: MapboxStyles.LIGHT,
+              // styleUri: MapboxStyles.LIGHT,
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Estado de permisos: ${locationState.hasPermission ? "Concedido" : "No concedido"}',
-                ),
-                if (locationState.position != null)
-                  Text(
-                    'Ubicación actual: Lat: ${locationState.position!.coordinates.lat}, '
-                    'Lng: ${locationState.position!.coordinates.lng}',
-                  ),
-                ElevatedButton(
-                  onPressed: () => ref
-                      .read(locationProvider.notifier)
-                      .requestLocationPermission(),
-                  child: const Text('Solicitar permisos'),
-                ),
-              ],
+            padding: const EdgeInsets.all(10),
+            child: ShadCard(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              title: SizedBox(
+                width: double.maxFinite,
+                child: Text(
+                    'Estado de permisos: ${locationState.hasPermission ? "Concedido" : "No concedido"}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.p.copyWith(
+                      height: 0,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                    )),
+              ),
+              description: locationState.position != null
+                  ? Text(
+                      'Ubicación actual: Lat: ${locationState.position!.coordinates.lat}, '
+                      'Lng: ${locationState.position!.coordinates.lng}',
+                    )
+                  : const Text('Ubicación no disponible'),
+              trailing: ShadButton.outline(
+                onPressed: () => ref
+                    .read(locationProvider.notifier)
+                    .requestLocationPermission(),
+                icon: const Icon(Icons.location_on),
+              ),
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.my_location),
-        label: const Text('Mi ubicación'),
-        onPressed: _obtenerUbicacionYActualizarMapa,
-      ),
+      // floatingActionButton: FloatingActionButton.extended(
+      //   icon: const Icon(Icons.my_location),
+      //   label: const Text('Mi ubicación'),
+      //   onPressed: _obtenerUbicacionYActualizarMapa,
+      // ),
     );
   }
 }

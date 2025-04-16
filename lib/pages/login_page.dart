@@ -28,6 +28,14 @@ class _LoginScreenPageState extends ConsumerState<LoginScreenPage> {
   final inputPadding =
       const ShadDecoration(labelPadding: EdgeInsets.symmetric(horizontal: 5));
 
+  bool isObscure = true;
+
+  void togglePasswordVisibility() {
+    setState(() {
+      isObscure = !isObscure;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
@@ -55,8 +63,16 @@ class _LoginScreenPageState extends ConsumerState<LoginScreenPage> {
                 decoration: inputPadding,
                 label: const Text("Contraseña"),
                 controller: passwordController,
-                obscureText: true,
+                obscureText: isObscure,
                 keyboardType: TextInputType.twitter,
+              ),
+              ShadSwitch(
+                label: const SizedBox(
+                    width: double.maxFinite, child: Text("Mostrar contraseña")),
+                value: !isObscure,
+                onChanged: (value) {
+                  togglePasswordVisibility();
+                },
               ),
               const SizedBox(height: 10),
               ShadBadge.secondary(

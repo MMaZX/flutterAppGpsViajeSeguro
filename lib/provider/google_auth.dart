@@ -1,4 +1,6 @@
+import 'package:app_viaje_seguro/config/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -6,35 +8,34 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 const List<String> scopes = <String>[
   'email',
   'https://www.googleapis.com/auth/userinfo.profile',
+  'https://www.googleapis.com/auth/contacts.readonly',
 ];
 
 // Inicializamos GoogleSignIn con tu clientId
 final GoogleSignIn googleSignIn = GoogleSignIn(
-  clientId:
-      '540563155539-lj9eqt4sb0273h1luu4ulugubkio7m6o.apps.googleusercontent.com',
   scopes: scopes,
 );
 
 class GoogleAuthService {
+  final WidgetRef ref;
+  GoogleAuthService(this.ref);
   // Método para iniciar sesión
   Future<GoogleSignInAccount?> signIn() async {
     try {
+      // signOut();
+      // return null;
       final GoogleSignInAccount? account = await googleSignIn.signIn();
+
       if (account != null) {
         // Obtener token de autenticación para enviar al backend
-        final GoogleSignInAuthentication auth = await account.authentication;
-        print('ID Token: ${auth.idToken}'); // Este token se envía al backend
-        print('Access Token: ${auth.accessToken}');
-
-        // Imprimir datos del usuario
-        printUserData(account);
+        // final GoogleSignInAuthentication auth = await account.authentication;
+        // Map<String, dynamic> userData = getUserData(account);
 
         return account;
       }
-      return null;
+      throw Exception('Error al iniciar sesión con Google');
     } catch (error) {
-      print('Error al iniciar sesión con Google: $error');
-      return null;
+      throw ExceptionsUtils(error).toString();
     }
   }
 
@@ -48,32 +49,32 @@ class GoogleAuthService {
     }
   }
 
-  // Método para imprimir los datos del usuario
-  void printUserData(GoogleSignInAccount account) {
-    print('Usuario autenticado:');
-    print('ID: ${account.id}');
-    print('Email: ${account.email}');
-    print('Nombre: ${account.displayName}');
-    print('Foto URL: ${account.photoUrl}');
-
-    // Puedes enviar estos datos al backend en formato JSON
-    final Map<String, dynamic> userData = {
-      'id': account.id,
-      'email': account.email,
-      'name': account.displayName,
-      'photoUrl': account.photoUrl,
-    };
-
-    print('Datos para enviar al backend: $userData');
-  }
-
-  // Método para obtener los datos del usuario en formato Map
-  Map<String, dynamic> getUserData(GoogleSignInAccount account) {
+  Map<String, dynamic> getUserData(
+    GoogleSignInAccount account, {
+    required String user,
+    required String password,
+    required String rol,
+    required String country,
+    required String address,
+    required int age,
+    required String genre,
+    required String phone,
+    required String identification,
+  }) {
     return {
       'id': account.id,
       'email': account.email,
       'name': account.displayName,
       'photoUrl': account.photoUrl,
+      'user': user,
+      'password': password,
+      'rol': rol,
+      'country': country,
+      'address': address,
+      'age': age,
+      'genre': genre,
+      'phone': phone,
+      'identification': identification,
     };
   }
 }
