@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
+import 'package:app_viaje_seguro/services/service_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +12,6 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-
 String ACCESS_TOKEN =
     "pk.eyJ1IjoiamVhc29uY3VlcyIsImEiOiJjbTJ1bnQ5cTYwMzl5MmlvaW5mY29vOHFhIn0.SRxhLbsSJ0F6GRL5mKXULA";
 
@@ -21,6 +21,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  initializeService();
   // await dotenv.load(fileName: ".env");
   runApp(const ProviderContent());
 }
