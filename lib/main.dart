@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
+import 'package:app_viaje_seguro/services/notifications_controller_services.dart';
 import 'package:app_viaje_seguro/services/service_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +23,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   initializeService();
+
   // await dotenv.load(fileName: ".env");
   runApp(const ProviderContent());
 }
@@ -33,13 +35,13 @@ class ProviderContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
         child: MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => ThemeCubit(),
-        ),
-      ],
-      child: const App(),
-    ));
+          providers: [
+            BlocProvider(
+              create: (context) => ThemeCubit(),
+            ),
+          ],
+          child: const App(),
+        ));
   }
 }
 

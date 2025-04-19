@@ -10,6 +10,7 @@ import 'package:app_viaje_seguro/pages/registrar_page.dart';
 import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
+import 'package:app_viaje_seguro/services/service_background.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -93,13 +94,26 @@ class _SesionPageState extends ConsumerState<SesionPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Ejecutar después de que se construya el widget
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final wsNotifier = ref.read(wsConnectionProvider.notifier);
+      wsNotifier.connect();
+      // wsNotifier.sendMessage({
+      //   "POLLITO": "Hola desde el cliente",
+      // });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textTheme = ShadTheme.of(context).textTheme;
     return BlocBuilder<ThemeCubit, bool>(
       builder: (context, state) {
         return Scaffold(
             appBar: AppBar(
-              // backgroundColor: Colors.transparent,
               actions: [
                 ShadButton(
                   onPressed: () => showDialog(

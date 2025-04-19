@@ -12,7 +12,9 @@ plugins {
 
 android {
     namespace = "com.example.ALZSAFE"
-    compileSdk = 34
+    compileSdk = 35
+    compileSdkVersion 35
+
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

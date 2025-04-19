@@ -16,6 +16,7 @@
   <uses-permission android:name="android.permission.WAKE_LOCK" />
   <application
     android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+
     <service
       android:name="com.alm.sample.BackgroundService"
       android:exported="false"

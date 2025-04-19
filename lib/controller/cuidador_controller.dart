@@ -7,6 +7,8 @@ import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/cuidador_model.dart';
 import 'package:app_viaje_seguro/model/familiar_model.dart';
+import 'package:app_viaje_seguro/services/notifications_controller_services.dart';
+import 'package:app_viaje_seguro/services/notifications_state.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -92,7 +94,18 @@ class CuidadorController {
         options: await prefs.setDioOptions(),
       );
       final json = response.data;
-      print(json.toString());
+      // print(json.toString());
+
+      final notifier =
+          ref.watch(notificationControllerProvider).sendNotificationToUser(
+                NotificationsState(
+                  title: "Se ha enviado una solicitud",
+                  body: "Un familiar a enviado la solicitud a un cuidador",
+                  idFamiliar: json['id_familiar'],
+                  idCuidador: json['id_cuidador'],
+                ),
+              );
+
       return true;
     } catch (e) {
       isBackReturn(context);

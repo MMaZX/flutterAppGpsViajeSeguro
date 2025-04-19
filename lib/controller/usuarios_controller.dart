@@ -6,6 +6,7 @@ import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/model/usuario_model.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
+import 'package:app_viaje_seguro/services/service_background.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 // import 'package:dio/dio.dart';
@@ -99,6 +100,12 @@ class UsuariosController {
       setTipoAuth(tipo.name);
       setToken(user.token);
       isBackReturn(context);
+
+      ref.watch(wsConnectionProvider.notifier).sendMessage({
+        "type": "init",
+        "userType": user.user.rol.toLowerCase().toString(),
+        "userId": user.user.id,
+      });
 
       return true;
     } catch (e) {

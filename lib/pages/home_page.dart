@@ -10,6 +10,7 @@ import 'package:app_viaje_seguro/pages/page_index/usuario_page.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/model_provider.dart';
+import 'package:app_viaje_seguro/services/notifications_controller_services.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,13 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Llama a listenToSocketMessages() solo una vez al inicializar el widget.
+    ref.read(notificationControllerProvider).listenToSocketMessages();
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = ShadTheme.of(context).textTheme;

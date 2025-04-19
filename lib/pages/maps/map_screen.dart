@@ -40,9 +40,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   Future<void> _obtenerUbicacionYActualizarMapa() async {
     try {
+      print("🔄 Obteniendo ubicación actual...");
       final pos = await geolocator.Geolocator.getCurrentPosition(
         desiredAccuracy: geolocator.LocationAccuracy.high,
       );
+      print("🔄 PARTE 2...");
 
       final point = Point(coordinates: Position(pos.longitude, pos.latitude));
       print("🧭 Ubicación actual: Lat: ${pos.latitude}, Lng: ${pos.longitude}");
@@ -65,7 +67,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final locationState = ref.watch(locationProvider);
 
     final theme = ShadTheme.of(context);
-
+    _obtenerUbicacionYActualizarMapa();
     return Scaffold(
       appBar: AppBar(title: const Text('Mapa con ubicación')),
       body: Column(

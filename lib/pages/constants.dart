@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 const String apiKey = "Your key";
 
@@ -16,7 +17,8 @@ const defaultPadding = 16.0;
 
 class EmptyWidget extends StatelessWidget {
   final String data;
-  const EmptyWidget(this.data, {super.key});
+  final Function()? isLoading;
+  const EmptyWidget(this.data, {this.isLoading, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +26,21 @@ class EmptyWidget extends StatelessWidget {
       alignment: Alignment.center,
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.all(10),
-      child: Text(
-        data,
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 18, height: 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            data,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, height: 0),
+          ),
+          isLoading != null
+              ? ShadButton(
+                  onPressed: isLoading,
+                  child: const Text("Actualizar"),
+                )
+              : const SizedBox.shrink()
+        ],
       ),
     );
   }

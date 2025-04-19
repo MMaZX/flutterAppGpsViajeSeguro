@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
+import 'package:app_viaje_seguro/provider/session_provider.dart';
+import 'package:app_viaje_seguro/services/notifications_controller_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -20,11 +22,21 @@ class WSConnectionNotifier extends StateNotifier<WebSocketChannel?> {
   final Ref ref;
   WSConnectionNotifier(this.ref) : super(null);
 
-  void connect(String url) {
-    final channel = WebSocketChannel.connect(Uri.parse(url));
+  void connect() {
+    final rawUrl = ref.read(connectionProvider).ipAddress;
+    final uri = Uri.parse(rawUrl);
+
+    // Extraer solo el host (por ejemplo: 192.168.1.129)
+    final ipAddress = uri.host;
+
+    // Construir la URI del WebSocket con el puerto 3000
+    final wsUri = Uri.parse('ws://$ipAddress:3000');
+
+    final channel = WebSocketChannel.connect(wsUri);
     state = channel;
+
     ref.read(wsConnectionStatusProvider.notifier).state = 'Conectado';
-    log('✅ Conectado a $url');
+    log('✅ Conectado a $wsUri');
   }
 
   void disconnect() {
@@ -72,6 +84,7 @@ class WSMessageListenerNotifier extends StateNotifier<List<String>> {
       log("📩 Mensaje recibido del servidor: $message");
       final data = jsonDecode(message);
       _handleMessage(data);
+      ref.watch(notificationControllerProvider);
     }, onError: (err) {
       log("❌ Error en el WebSocket: $err");
     }, onDone: () {
@@ -153,6 +166,7 @@ Future<void> initializeService() async {
   await service.startService();
 }
 
+@pragma('vm:entry-point')
 void onStart(ServiceInstance service) {
   DartPluginRegistrant.ensureInitialized();
   final channel = WebSocketChannel.connect(Uri.parse('ws://localhost:3000'));
