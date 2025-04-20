@@ -6,7 +6,8 @@ import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/model/usuario_model.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
-import 'package:app_viaje_seguro/services/service_background.dart';
+import 'package:app_viaje_seguro/services/location_stream_notification.dart';
+import 'package:app_viaje_seguro/services/web_socket_service_background.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 // import 'package:dio/dio.dart';
@@ -89,7 +90,6 @@ class UsuariosController {
 
       final json = response.data;
       final user = LoginResponse.fromJson(json['data']);
-
       isBackReturn(context);
       // RESPONSE
       setCorreo(email);
@@ -106,7 +106,7 @@ class UsuariosController {
         "userType": user.user.rol.toLowerCase().toString(),
         "userId": user.user.id,
       });
-
+      ref.read(locationStreamProvider.notifier).start();
       return true;
     } catch (e) {
       isBackReturn(context);
@@ -203,10 +203,17 @@ class UsuariosController {
 enum AuthType { email, faceid }
 
 class AuthPrefs {
+  Future<bool> isLoggedIn() async {
+    final token = await getId();
+    final rol = await getTipoRol();
+    return token != 0 && rol.isNotEmpty;
+  }
+
   Future<int> getId() async {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getInt(SharedToken.clienteId);
     if (id == null || id == 0) {
+      return 0;
       throw "El id no puede estar vacío";
     }
     return id;

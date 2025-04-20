@@ -50,6 +50,25 @@ class PacientesModel {
       updatedAt: DateTime.parse(json['updated_at']),
     );
   }
+factory PacientesModel.fromDefault() {
+    return PacientesModel(
+      id: 0,
+      relation: '',
+      userId: 0,
+      name: '',
+      age: 0,
+      image: '',
+      genre: '',
+      phone: '',
+      address: '',
+      ribbon: '',
+      qr: '',
+      status: 0,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+
 }
 
 class BodyCreatePacientes {

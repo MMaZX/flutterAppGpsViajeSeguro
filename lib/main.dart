@@ -1,8 +1,9 @@
 import 'dart:developer';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
-import 'package:app_viaje_seguro/services/notifications_controller_services.dart';
-import 'package:app_viaje_seguro/services/service_background.dart';
+import 'package:app_viaje_seguro/services/channel_pacientes.dart';
+import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
+import 'package:app_viaje_seguro/services/web_socket_service_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,9 +23,20 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  initializeService();
+  final container = ProviderContainer();
 
-  // await dotenv.load(fileName: ".env");
+  final backgroundController =
+      container.read(backgroundServiceControllerProvider.notifier);
+  await backgroundController.initialize();
+  await backgroundController.startService();
+
+  // Iniciar la conexión WebSocket
+  final wsConnectionNotifier = container.read(wsConnectionProvider.notifier);
+  wsConnectionNotifier.connect();
+
+// // Para detener el servicio de ubicación
+//   wsMessageListener.stopLocationUpdates();
+
   runApp(const ProviderContent());
 }
 
@@ -35,13 +47,13 @@ class ProviderContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
         child: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (context) => ThemeCubit(),
-            ),
-          ],
-          child: const App(),
-        ));
+      providers: [
+        BlocProvider(
+          create: (context) => ThemeCubit(),
+        ),
+      ],
+      child: const App(),
+    ));
   }
 }
 
@@ -57,6 +69,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     ref.read(permissionProvider.notifier).checkPermission();
+    init();
   }
 
   @override
@@ -66,13 +79,36 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   }
 
   @override
+  didChangeDependencies() {
+    init();
+    super.didChangeDependencies();
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     log("state : $state");
     ref.read(observerAppProvider.notifier).update((state) => state);
     if (state == AppLifecycleState.resumed) {
       ref.read(permissionProvider.notifier).checkPermission();
     }
+    init();
     super.didChangeAppLifecycleState(state);
+  }
+
+  init() async {
+    Future.delayed(Duration.zero, () {
+      ref.read(permissionProvider.notifier).checkPermission();
+    });
+    // final container = ProviderContainer();
+    // final backgroundController =
+    //     container.read(backgroundServiceControllerProvider.notifier);
+    // await backgroundController.initialize();
+    // await backgroundController.startService();
+
+    // // Iniciar la conexión WebSocket
+    // final wsConnectionNotifier = container.read(wsConnectionProvider.notifier);
+    // wsConnectionNotifier.connect();
+    // await backgroundController.startService();
   }
 
   @override

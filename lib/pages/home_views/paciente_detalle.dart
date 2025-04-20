@@ -1,5 +1,7 @@
 import 'package:app_viaje_seguro/model/pacientes_model.dart';
+import 'package:app_viaje_seguro/pages/zona_segura/create_zona_segura.dart';
 import 'package:app_viaje_seguro/widgets/custom_widgets.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -95,6 +97,14 @@ class _PacientesPageDetalleState extends ConsumerState<PacientesPageDetalle> {
                 iconData: LucideIcons.shieldCheck,
                 title: "Estado",
                 subtitle: paciente.status == 1 ? "Activo" : "Inactivo"),
+            ShadButton(
+              onPressed: () => Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) => CreateZonaSegura(paciente.userId),
+                  )),
+              child: const Text("Configurar ZONA SEGURA"),
+            ),
           ],
         ));
   }

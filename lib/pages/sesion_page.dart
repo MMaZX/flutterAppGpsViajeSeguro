@@ -10,7 +10,7 @@ import 'package:app_viaje_seguro/pages/registrar_page.dart';
 import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
-import 'package:app_viaje_seguro/services/service_background.dart';
+import 'package:app_viaje_seguro/services/web_socket_service_background.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
