@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
 import 'package:app_viaje_seguro/services/states/notifications_state.dart';
@@ -22,16 +23,21 @@ class NotificationController {
     // Ya no necesitamos inicializar las notificaciones aquí
     // porque estamos usando el servicio centralizado
 
-    final socket = ref.read(wsConnectionProvider);
-    if (socket == null) {
-      // WebSocket connection is null.
+    final isConnected = ref.read(wsConnectionProvider.notifier).isConnected;
+    if (!isConnected) {
+      log('No hay conexión WebSocket. No se puede escuchar mensajes.');
       return;
     }
 
     // WebSocket connection established.
     final idUsuario = ref.read(userCredentialsProvider).id;
+    if (idUsuario != 0) {
+      log('ID de usuario no disponible. No se puede escuchar mensajes.');
+      return;
+    }
 
-    socket.stream.listen((message) {
+    final socket = ref.read(wsConnectionProvider);
+    socket!.stream.listen((message) {
       // Received message from WebSocket.
       final data = jsonDecode(message);
 

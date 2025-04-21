@@ -19,16 +19,22 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <uses-library android:name="org.apache.http.legacy" android:required="false" />
 
-        <service
+        <!-- <service
             android:name="com.alm.sample.BackgroundService"
             android:exported="false"
+            android:foregroundServiceType="location|dataSync" /> -->
+        <service
+            android:name="id.flutter.plugins.flutter_background_service.BackgroundService"
+            android:enabled="true"
+            android:exported="true"
+            android:stopWithTask="false"
             android:foregroundServiceType="location|dataSync" />
 
         <receiver android:enabled="true" android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <!-- <action android:name="android.intent.action.MY_PACKAGE_REPLACED" /> -->
             </intent-filter>
         </receiver>
     </application>

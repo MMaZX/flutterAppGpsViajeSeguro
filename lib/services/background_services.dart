@@ -2,8 +2,9 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:ui';
+import 'package:app_viaje_seguro/services/configuration_services.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
-import 'package:app_viaje_seguro/services/on_background_services.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,43 +12,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final backgroundServiceControllerProvider =
     StateNotifierProvider<BackgroundServiceController, bool>((ref) {
-  final notificationService = ref.watch(notificationServiceProvider);
-  return BackgroundServiceController(ref, notificationService);
+  return BackgroundServiceController(ref);
 });
 
 class BackgroundServiceController extends StateNotifier<bool> {
-  final NotificationService _notificationService;
+  // final NotificationService _notificationService;
   final Ref ref;
 
   final FlutterBackgroundService _service = FlutterBackgroundService();
 
-  BackgroundServiceController(this.ref, this._notificationService)
-      : super(false);
-
-  Future<bool> backgroundServiceIsRunning() async {
-    final service = FlutterBackgroundService();
-    final isRunning = await service.isRunning();
-    if (!isRunning) {
-      log("🟡 El servicio NO está corriendo. Se va a inicializar...");
-
-      try {
-        await initialize();
-        await startService();
-        return true; // El servicio se inició correctamente
-      } catch (e) {
-        log("🔴 Error al inicializar o iniciar el servicio: $e");
-        return false; // Hubo un error al iniciar el servicio
-      }
-    } else {
-      log("🟢 El servicio YA está corriendo correctamente.");
-      return true; // El servicio ya estaba corriendo
-    }
-  }
+  BackgroundServiceController(this.ref) : super(false);
 
   // Inicializar todo el sistema
   Future<void> initialize() async {
+    final notificationService = ref.watch(notificationServiceProvider);
     // Primero inicializamos las notificaciones
-    await _notificationService.initialize();
+    await notificationService.initialize();
     // Luego configuramos el servicio
     await _configureService(title: 'AlzSafe', content: 'Servicio iniciado');
     log("🛫🛫🛫 SERVICIO INICIALIZADO");
@@ -58,17 +38,18 @@ class BackgroundServiceController extends StateNotifier<bool> {
       {required String title, required String content}) async {
     await _service.configure(
       androidConfiguration: AndroidConfiguration(
+        autoStart: true,
         onStart: onStart,
         isForegroundMode: true,
-        autoStart: true,
+        autoStartOnBoot: true,
         notificationChannelId: EnumNotificationChannel.service.canalId,
         initialNotificationTitle: title,
         initialNotificationContent: content,
       ),
       iosConfiguration: IosConfiguration(
-        autoStart: true,
+        autoStart: false,
         onForeground: onStart,
-        onBackground: (_) => true,
+        onBackground: (service) => true,
       ),
     );
   }
@@ -86,34 +67,52 @@ class BackgroundServiceController extends StateNotifier<bool> {
   }
 
   // Reiniciar el servicio
-  Future<void> restartService() async {
-    await stopService();
-    await startService();
+  Future<void> restartOnService() async {
+    //
   }
 
   // Actualizar la notificación del servicio
   Future<void> updateServiceNotification(String title, String content) async {
-    // final service = FlutterBackgroundService();
-    backgroundServiceIsRunning();
-    _service.invoke(
-      'updateNotification',
-      {
+    try {
+      _service.invoke(
+        'updateNotification',
+        {
+          'title': title,
+          'content': content,
+        },
+      );
+    } catch (e) {
+      throw Exception("CATCH UPDATE SERVICES NOTIFICATION: $e");
+    }
+  }
+
+  // Actualizar la notificación del servicio con información de ubicación
+  Future<void> updateLocationNotification(String title, String content) async {
+    try {
+      final data = {
         'title': title,
         'content': content,
-      },
-    );
+      };
+      _service.invoke(
+        'updateLocationNotification',
+        data,
+      );
+    } catch (e) {
+      throw Exception("CATCH UPDATE LOCATION NOTIFICATION: $e");
+    }
   }
 
   // Cancelar una notificación
   Future<void> cancelNotification(int id) async {
-    await _notificationService.cancelNotification(id);
+    final notificationService = ref.watch(notificationServiceProvider);
+    await notificationService.cancelNotification(id);
   }
 
   // Método para solicitar una reconexión del WebSocket
   Future<void> requestWebSocketReconnect() async {
-    if (await _service.isRunning()) {
-      _service.invoke('requestReconnect');
-    }
+    _service.invoke('requestReconnect');
+    // if (await _service.isRunning()) {
+    // }
   }
 
   // Modifica el método updateServiceNotification para permitir agregar acciones
@@ -122,19 +121,39 @@ class BackgroundServiceController extends StateNotifier<bool> {
     String content, {
     Map<String, String>? actions,
   }) async {
-    if (await _service.isRunning()) {
-      _service.invoke('updateNotification', {
-        'title': title,
-        'content': content,
-        'actions': actions,
-      });
-    }
+    _service.invoke('updateNotification', {
+      'title': title,
+      'content': content,
+      'actions': actions,
+    });
+    // if (await _service.isRunning()) {
+    // }
   }
 }
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
-  final container = ProviderContainer();
-  final backgroundInit = BackgroundInitializer(container);
-  await backgroundInit.initialize(service);
+  //
+  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+  final provider = ProviderContainer();
+
+  final notificationService = provider.read(notificationServiceProvider);
+  await notificationService.initialize();
+
+  service.on('sendData').listen((event) {
+    print('📦 Recibido sendData con: $event');
+    // Puedes guardar algo, mandar por websocket, etc.
+  });
+
+  final config = ConfigurationServices(provider);
+  await config.initOnBackground(service);
 }
+
+// @pragma('vm:entry-point')
+// Future<bool> onIosBackground(ServiceInstance service) async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   DartPluginRegistrant.ensureInitialized();
+
+//   return true;
+// }

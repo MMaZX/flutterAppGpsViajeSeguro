@@ -3,7 +3,8 @@ import 'dart:ui';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
-import 'package:app_viaje_seguro/services/init_services.dart';
+import 'package:app_viaje_seguro/services/background_services.dart';
+import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,17 +16,20 @@ String ACCESS_TOKEN =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // DartPluginRegistrant.ensureInitialized();
+  final ProviderContainer provider = ProviderContainer();
 
-  final initializer = AppInitializer();
-  await initializer.initialize();
-  await initializer.initNotificationServices();
-  await initializer.startBackgroundService();
+  provider.read(notificationServiceProvider).initialize(); // 1. NOTIFICACIONES
+
+  final backgroundServices =
+      provider.read(backgroundServiceControllerProvider.notifier);
+  backgroundServices.initialize(); // 2. SERVICIO EN SEGUNDO PLANO
+  backgroundServices.startService(); // 3. INICIA EL SERVICIO EN SEGUNDO PLANO
+
+  final permissionHandlerServices = provider.read(permissionProvider.notifier);
+  await permissionHandlerServices.checkPermission(); // 4. PERMISOS
 
   runApp(
-    UncontrolledProviderScope(
-      container: initializer.getProviderContainer(),
-      child: const ProviderContent(),
-    ),
+    const ProviderContent(),
   );
 }
 
@@ -60,7 +64,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     Future.microtask(() {
       checkPermissionHandler();
     });
-    checkRolEnForeground();
   }
 
   @override

@@ -83,7 +83,7 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   // Inicialización de notificaciones
-  Future<void> initialize() async {
+  Future<FlutterLocalNotificationsPlugin> initialize() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -94,6 +94,7 @@ class NotificationService {
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
     // Crear todos los canales de notificación
     await _createNotificationChannels();
+    return _flutterLocalNotificationsPlugin;
   }
 
   // Método para crear los canales de notificación
@@ -147,12 +148,5 @@ class NotificationService {
   // Cancelar todas las notificaciones
   Future<void> cancelAllNotifications() async {
     await _flutterLocalNotificationsPlugin.cancelAll();
-  }
-}
-
-// Extensión para capitalizar strings (útil para formatear nombres de canales)
-extension StringExtension on String {
-  String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

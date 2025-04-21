@@ -63,9 +63,8 @@ class UsuariosController {
       await userNotifier.setFaceId(user.faceIdToken.toString());
       await userNotifier.setToken(user.token);
 
-      final tipoAuth = user.faceIdToken == null 
-          ? AuthType.email.name 
-          : AuthType.faceid.name;
+      final tipoAuth =
+          user.faceIdToken == null ? AuthType.email.name : AuthType.faceid.name;
       await userNotifier.setTipoAuth(tipoAuth);
       // isBackReturn(context);
       return true;
@@ -89,6 +88,8 @@ class UsuariosController {
 
       final json = response.data;
       final user = LoginResponse.fromJson(json['data']);
+      final watch = ref.watch(wsConnectionProvider.notifier);
+
       isBackReturn(context);
       // RESPONSE
       final userNotifier = ref.read(userCredentialsProvider.notifier);
@@ -98,13 +99,12 @@ class UsuariosController {
       await userNotifier.setFaceId(faceIdToken);
       await userNotifier.setTipoAuth(tipo.name);
       await userNotifier.setToken(user.token);
-      isBackReturn(context);
-
-      ref.watch(wsConnectionProvider.notifier).sendMessage({
+      watch.sendMessage({
         "type": "init",
         "userType": user.user.rol.toLowerCase().toString(),
         "userId": user.user.id,
       });
+      isBackReturn(context);
       ref.read(locationStreamProvider.notifier).startLocationStream();
       return true;
     } catch (e) {

@@ -15,8 +15,7 @@ class PermissionNotifier extends StateNotifier<PermissionState> {
     requestAllRelevantPermissions();
     checkPermission();
   }
-
-  Future<void> checkPermission() async {
+  Future<bool> checkPermission() async {
     log("========================================");
     log("🔍 Checking permissions...");
 
@@ -37,6 +36,10 @@ class PermissionNotifier extends StateNotifier<PermissionState> {
 
     log("✅ Permission check completed. Updated state: $state");
     log("========================================");
+
+    return state.locationGranted &&
+        state.locationAlwaysGranted &&
+        state.notificationsGranted;
   }
 
   Future<void> requestAllRelevantPermissions() async {

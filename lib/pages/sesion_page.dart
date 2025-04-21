@@ -131,6 +131,8 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     const SizedBox(height: 30),
                     ShadButton(
                       onPressed: () {
+                        ref.watch(wsConnectionProvider.notifier).connect();
+
                         Navigator.push(
                             context,
                             CupertinoPageRoute(
@@ -155,6 +157,8 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     ShadButton(
                       width: double.maxFinite,
                       onPressed: () {
+                        ref.watch(wsConnectionProvider.notifier).connect();
+
                         Navigator.push(
                             context,
                             CupertinoPageRoute(
