@@ -8,12 +8,13 @@ import 'package:app_viaje_seguro/pages/pacientes/cuidador_paciente_page.dart';
 import 'package:app_viaje_seguro/pages/pacientes/familiar_paciente_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/notificaciones_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/ubicacion_page.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 final getDashboardMenuItemsProvider =
     FutureProvider.autoDispose<List<CustomModelMenu>>((ref) async {
-  String watch = await AuthPrefs().getTipoRol();
+  String watch = ref.read(userCredentialsProvider).tipoRol;
   print("getDashboardMenuItemsProvider: $watch");
   String rol = watch.trim().toLowerCase();
   if (rol == RolUsuario.admin.name) {
@@ -32,7 +33,7 @@ final getDashboardMenuItemsProvider =
 
 final getBottomMenuItemsProvider =
     FutureProvider.autoDispose<List<CustomModelMenu>>((ref) async {
-  String watch = await AuthPrefs().getTipoRol();
+  String watch = ref.read(userCredentialsProvider).tipoRol;
   print("getDashboardMenuItemsProvider: $watch");
   String rol = watch.trim().toLowerCase();
   if (rol == RolUsuario.admin.name) {

@@ -10,7 +10,8 @@ import 'package:app_viaje_seguro/pages/page_index/usuario_page.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/model_provider.dart';
-import 'package:app_viaje_seguro/services/notifications_controller_services.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
+import 'package:app_viaje_seguro/services/enviar_solicitud_controller.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +36,27 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(notificationControllerProvider).listenToSocketMessages();
   }
 
+
+  Widget getWidgetByRol() {
+    final tipoRolUserCredential = ref.watch(userCredentialsProvider).tipoRol;
+    switch (tipoRolUserCredential) {
+      case "CUIDADOR":
+        return getIndexWidget(ref.watch(indexomeBottomNavigatorProvider));
+      case "FAMILIAR":
+        return getIndexWidget(ref.watch(indexomeBottomNavigatorProvider));
+      case "PACIENTE":
+        return getIndexWidgetPaciente(ref.watch(indexomeBottomNavigatorProvider));
+      default:
+        return getIndexWidget(ref.watch(indexomeBottomNavigatorProvider));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = ShadTheme.of(context).textTheme;
     final indexHome = ref.watch(indexomeBottomNavigatorProvider);
     final watch = ref.watch(getBottomMenuItemsProvider);
+              final tipoRolUserCredential = ref.watch(userCredentialsProvider).tipoRol;
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +66,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           const IconChangeTheme(),
           ShadButton(
             onPressed: () async {
-              String auth = await AuthPrefs().getTipoAuth();
+              final auth = ref.read(userCredentialsProvider).tipoAuth;
+
               if (auth == "google") {
                 final googleAuthService = GoogleAuthService(ref);
                 await googleAuthService.signOut();
@@ -69,42 +87,27 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: SafeArea(
             child: Column(
           children: [
-            FutureCustomWidget(
-              future: AuthPrefs().getTipoRol(),
-              customLoading: const ShadProgress(),
-              widgetBuilder: (context, snapshot) => Container(
-                width: double.maxFinite,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.greenAccent.shade700,
-                ),
-                padding: const EdgeInsets.all(5),
-                child: Text(
-                  "Eres un ${snapshot.data}",
-                  style: textTheme.h4.copyWith(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+        Container(
+              width: double.maxFinite,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.greenAccent.shade700,
+              ),
+              padding: const EdgeInsets.all(5),
+              child: Text(
+                "Eres un $tipoRolUserCredential",
+                style: textTheme.h4.copyWith(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
             Expanded(
-                child: FutureCustomWidget(
-              future: AuthPrefs().getTipoRol(),
-              widgetBuilder: (context, snapshot) {
-                switch ((snapshot.data).toString()) {
-                  case "CUIDADOR":
-                    return getIndexWidget(indexHome);
-                  case "FAMILIAR":
-                    return getIndexWidget(indexHome);
-                  case "PACIENTE":
-                    return getIndexWidgetPaciente(indexHome);
-                  default:
-                    return getIndexWidget(indexHome);
-                }
-              },
-            )),
+                child: getWidgetByRol()
+            
+            
+            ),
           ],
         )),
       ),

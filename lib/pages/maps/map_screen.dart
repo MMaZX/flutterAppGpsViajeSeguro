@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/provider/geolocator_provider.dart';
-import 'package:app_viaje_seguro/services/web_socket_service_background.dart';
+import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
@@ -23,6 +23,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   void initState() {
     super.initState();
+    // Solicitar permisos y obtener la ubicación inicial al iniciar la pantalla
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(locationProvider.notifier).checkAndRequestPermission();
+    });
   }
 
   void _onMapCreated(MapboxMap mapboxMap) {
@@ -39,70 +43,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  Future<bool> _verificarPermisoUbicacion() async {
-    var status = await Permission.location.status;
-    if (status.isDenied || status.isPermanentlyDenied) {
-      status = await Permission.location.request();
-    }
-    return status.isGranted;
-  }
-
-  Stream<Point> obtenerUbicacionEnTiempoReal() async* {
-    try {
-      final tienePermiso = await _verificarPermisoUbicacion();
-      if (!tienePermiso) {
-        print("❌ Permiso denegado.");
-        return; // Termina el stream si no hay permiso
-      }
-
-      log("🔄 Iniciando stream de ubicación...");
-      await for (final position in geolocator.Geolocator.getPositionStream()) {
-        log("🧭 Nueva ubicación: Lat: ${position.latitude}, Lng: ${position.longitude}");
-        final point =
-            Point(coordinates: Position(position.longitude, position.latitude));
-        ref.read(locationProvider.notifier).updateUserPosition(point);
-        yield point; // Emitir la nueva ubicación al stream
-        mapboxMap?.flyTo(
-          CameraOptions(center: point, zoom: 14.0),
-          MapAnimationOptions(duration: 1500),
-        );
-      }
-      // Centrar el mapa
-    } catch (e) {
-      print("❌ Error en el stream de ubicación: $e");
-      // Puedes decidir si quieres re-emitir el error o simplemente terminar el stream
-    }
-  }
-
-  // Future<void> _obtenerUbicacionYActualizarMapa() async {
-  //   try {
-  //     print("🔄 Obteniendo ubicación actual...");
-  //     final pos = await geolocator.Geolocator.getCurrentPosition(
-  //       desiredAccuracy: geolocator.LocationAccuracy.high,
-  //     );
-  //     print("🔄 PARTE 2...");
-
-  //     final point = Point(coordinates: Position(pos.longitude, pos.latitude));
-  //     print("🧭 Ubicación actual: Lat: ${pos.latitude}, Lng: ${pos.longitude}");
-
-  //     // Actualizar en Riverpod
-  //     ref.read(locationProvider.notifier).updateUserPosition(point);
-
-  //     // Centrar el mapa
-  //     mapboxMap?.flyTo(
-  //       CameraOptions(center: point, zoom: 14.0),
-  //       MapAnimationOptions(duration: 1500),
-  //     );
-  //   } catch (e) {
-  //     print("❌ Error obteniendo ubicación: $e");
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider);
-
     final theme = ShadTheme.of(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Mapa con ubicación')),
       body: Column(
@@ -142,9 +87,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     )
                   : const Text('Ubicación no disponible'),
               trailing: ShadButton.outline(
-                onPressed: () => ref
-                    .read(locationProvider.notifier)
-                    .requestLocationPermission(),
+                onPressed: () {
+                  ref
+                      .read(locationProvider.notifier)
+                      .requestLocationPermission();
+                },
                 icon: const Icon(Icons.location_on),
               ),
             ),
@@ -154,13 +101,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       // floatingActionButton: FloatingActionButton.extended(
       //   icon: const Icon(Icons.my_location),
       //   label: const Text('Mi ubicación'),
-      //   onPressed: _obtenerUbicacionYActualizarMapa,
+      //   onPressed: () {
+      //     ref.read(locationProvider.notifier).getCurrentLocation();
+      //   },
       // ),
     );
   }
 }
 
-// Modelo para almacenar la ubicación
 class UserLocation {
   final Point? position;
   final bool hasPermission;
@@ -185,34 +133,56 @@ class UserLocation {
   }
 }
 
-// StateNotifier para manejar la ubicación
-class LocationNotifier extends StateNotifier<UserLocation> {
-  LocationNotifier() : super(UserLocation(isLoading: false));
-
-  // Solicitar permisos de ubicación
-  Future<void> requestLocationPermission() async {
-    state = state.copyWith(isLoading: true);
-
-    var status = await Permission.locationWhenInUse.request();
-    state = state.copyWith(
-      hasPermission: status.isGranted,
-      isLoading: false,
-    );
-
-    final position = await geolocator.Geolocator.getCurrentPosition();
-    final point =
-        Point(coordinates: Position(position.longitude, position.latitude));
-    updateUserPosition(point);
-  }
-
-  // Actualizar la posición del usuario (esto se llamaría desde el mapa)
-  void updateUserPosition(Point position) {
-    state = state.copyWith(position: position);
-  }
-}
-
-// Provider para el StateNotifier
 final locationProvider =
     StateNotifierProvider<LocationNotifier, UserLocation>((ref) {
   return LocationNotifier();
 });
+
+class LocationNotifier extends StateNotifier<UserLocation> {
+  LocationNotifier() : super(UserLocation());
+
+  Future<void> getCurrentLocation() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final hasPermission = await _checkLocationPermission();
+      if (!hasPermission) {
+        state = state.copyWith(hasPermission: false, isLoading: false);
+        return;
+      }
+      final position = await geolocator.Geolocator.getCurrentPosition(
+        desiredAccuracy: geolocator.LocationAccuracy.high,
+      );
+      state = state.copyWith(
+        position:
+            Point(coordinates: Position(position.longitude, position.latitude)),
+        hasPermission: true,
+        isLoading: false,
+      );
+    } catch (e) {
+      log("Error al obtener la ubicación actual: $e");
+      state = state.copyWith(isLoading: false);
+      // Puedes manejar el error de manera más específica aquí
+    }
+  }
+
+  Future<bool> requestLocationPermission() async {
+    final status = await Permission.location.request();
+    state = state.copyWith(hasPermission: status.isGranted);
+    return status.isGranted;
+  }
+
+  Future<bool> _checkLocationPermission() async {
+    final status = await Permission.location.status;
+    state = state.copyWith(hasPermission: status.isGranted);
+    return status.isGranted;
+  }
+
+  Future<void> checkAndRequestPermission() async {
+    final hasPermission = await _checkLocationPermission();
+    if (!hasPermission) {
+      await requestLocationPermission();
+    } else {
+      getCurrentLocation(); // Obtener la ubicación si ya tiene permisos
+    }
+  }
+}

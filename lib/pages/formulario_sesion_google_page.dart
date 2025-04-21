@@ -8,6 +8,7 @@ import 'package:app_viaje_seguro/pages/registrar_page.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/pages/widgets_constants.dart';
 import 'package:app_viaje_seguro/provider/google_auth.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -86,10 +87,11 @@ class _FormularioSesionGooglePageState
       final json = response.data;
       final users = LoginResponse.fromJson(json['data']);
 
-      final controller = UsuariosController(context, ref);
+      // final controller = UsuariosController(context, ref);
+      final controller = ref.read(userCredentialsProvider.notifier);
       controller.setCorreo(users.user.email);
       controller.setTipoRol(users.user.rol);
-      controller.setId(users.user.id.toString());
+      controller.setId(users.user.id);
 
       // OTROS DATOS
       // controller.setFaceid(faceIdToken);

@@ -1,9 +1,8 @@
 import 'dart:convert';
-
-import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
-import 'package:app_viaje_seguro/services/notifications_state.dart';
-import 'package:app_viaje_seguro/services/web_socket_service_background.dart';
+import 'package:app_viaje_seguro/services/states/notifications_state.dart';
+import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final notificationControllerProvider = Provider((ref) {
@@ -30,8 +29,7 @@ class NotificationController {
     }
 
     // WebSocket connection established.
-    final myId = await AuthPrefs().getId();
-    // Retrieved myId.
+    final idUsuario = ref.read(userCredentialsProvider).id;
 
     socket.stream.listen((message) {
       // Received message from WebSocket.
@@ -44,7 +42,7 @@ class NotificationController {
         final notification = NotificationsState.fromMap(payload);
 
         // Check if the notification is for the current user.
-        if (notification.idCuidador == myId) {
+        if (notification.idCuidador == idUsuario) {
           // Notification is for the current user.
           _showNotification(
             title: notification.title,
@@ -67,18 +65,13 @@ class NotificationController {
     required String title,
     required String body,
   }) async {
-    // Usamos el controlador de servicio en segundo plano para mostrar la notificación
-    final backgroundController =
-        ref.read(backgroundServiceControllerProvider.notifier);
-
-    await backgroundController.showCustomNotification(
-      id: requestNotificationId,
-      channelId:
-          'new_request_channel_id', // Usamos el canal de nuevas solicitudes
-      title: title,
-      body: body,
-      ongoing: false,
-    );
+    ref.read(notificationServiceProvider).showNotification(
+          id: requestNotificationId,
+          channel: EnumNotificationChannel.newRequest,
+          title: title,
+          body: body,
+          ongoing: true,
+        );
   }
 
   /// Método para enviar una notificación al WebSocket

@@ -10,7 +10,8 @@ import 'package:app_viaje_seguro/pages/registrar_page.dart';
 import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
-import 'package:app_viaje_seguro/services/web_socket_service_background.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
+import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -53,10 +54,11 @@ class _SesionPageState extends ConsumerState<SesionPage> {
           final json = response.data;
           final users = LoginResponse.fromJson(json['data']);
           if (users.token.isNotEmpty) {
-            final controller = UsuariosController(context, ref);
+            // final controller = UsuariosController(context, ref);
+            final controller = ref.read(userCredentialsProvider.notifier);
             controller.setCorreo(users.user.email);
             controller.setTipoRol(users.user.rol);
-            controller.setId(users.user.id.toString());
+            controller.setId(users.user.id);
 
             // OTROS DATOS
             // controller.setFaceid(faceIdToken);
@@ -91,20 +93,6 @@ class _SesionPageState extends ConsumerState<SesionPage> {
         _isLoading = false;
       });
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Ejecutar después de que se construya el widget
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final wsNotifier = ref.read(wsConnectionProvider.notifier);
-      wsNotifier.connect();
-      // wsNotifier.sendMessage({
-      //   "POLLITO": "Hola desde el cliente",
-      // });
-    });
   }
 
   @override

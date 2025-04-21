@@ -7,8 +7,9 @@ import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/cuidador_model.dart';
 import 'package:app_viaje_seguro/model/familiar_model.dart';
-import 'package:app_viaje_seguro/services/notifications_controller_services.dart';
-import 'package:app_viaje_seguro/services/notifications_state.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
+import 'package:app_viaje_seguro/services/enviar_solicitud_controller.dart';
+import 'package:app_viaje_seguro/services/states/notifications_state.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -20,14 +21,15 @@ class CuidadorController {
 
   CuidadorController(this.context, this.ref);
 
-  final prefs = AuthPrefs();
-
   Future<List<CuidadorModel>> getByIdCuidador() async {
     try {
+      final options =
+          ref.read(userCredentialsProvider.notifier).getDioOptions();
+
       Dio api = Api(ref).dio;
       final response = await api.get(
         ApiRoutes.cuidador.prefix,
-        options: await prefs.setDioOptions(),
+        options: await options,
       );
 
       final json = response.data;
@@ -46,7 +48,8 @@ class CuidadorController {
       Dio api = Api(ref).dio;
       final response = await api.get(
         ApiRoutes.listaDeSolicitudes.prefix,
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
 
       final json = response.data;
@@ -66,7 +69,8 @@ class CuidadorController {
 
       final response = await api.get(
         ApiRoutes.cuidador.prefix,
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
 
       final json = response.data;
@@ -91,7 +95,8 @@ class CuidadorController {
           "patient_id": pacienteId,
           "cuidador_id": cuidadorId,
         },
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       // print(json.toString());
@@ -120,7 +125,8 @@ class CuidadorController {
 
       final response = await api.get(
         ApiRoutes.validarPaciente.prefix,
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
 
       final json = response.data;
@@ -143,7 +149,8 @@ class CuidadorController {
         data: {
           "id_request": id,
         },
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       // isBackReturn(context);
@@ -165,7 +172,8 @@ class CuidadorController {
         data: {
           "status": status,
         },
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       List<CuidadorRequestValidate> paciente = [];
@@ -185,7 +193,8 @@ class CuidadorController {
 
       final response = await api.get(
         ApiRoutes.obtenerListaFamiliaresPorCuidador.prefix,
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       List<FamiliarModelPaciente> paciente = [];
@@ -205,7 +214,8 @@ class CuidadorController {
 
       final response = await api.get(
         ApiRoutes.obtenerListaPacientesPorCuidador.prefix,
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       List<DetalleDataModel> paciente = [];

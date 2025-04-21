@@ -1,43 +1,32 @@
 import 'dart:developer';
+import 'dart:ui';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
-import 'package:app_viaje_seguro/services/channel_pacientes.dart';
-import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
-import 'package:app_viaje_seguro/services/web_socket_service_background.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
+import 'package:app_viaje_seguro/services/init_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 String ACCESS_TOKEN =
     "pk.eyJ1IjoiamVhc29uY3VlcyIsImEiOiJjbTJ1bnQ5cTYwMzl5MmlvaW5mY29vOHFhIn0.SRxhLbsSJ0F6GRL5mKXULA";
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MapboxOptions.setAccessToken(ACCESS_TOKEN);
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+  // DartPluginRegistrant.ensureInitialized();
+
+  final initializer = AppInitializer();
+  await initializer.initialize();
+  await initializer.initNotificationServices();
+  await initializer.startBackgroundService();
+
+  runApp(
+    UncontrolledProviderScope(
+      container: initializer.getProviderContainer(),
+      child: const ProviderContent(),
+    ),
   );
-  final container = ProviderContainer();
-
-  final backgroundController =
-      container.read(backgroundServiceControllerProvider.notifier);
-  await backgroundController.initialize();
-  await backgroundController.startService();
-
-  // Iniciar la conexión WebSocket
-  final wsConnectionNotifier = container.read(wsConnectionProvider.notifier);
-  wsConnectionNotifier.connect();
-
-// // Para detener el servicio de ubicación
-//   wsMessageListener.stopLocationUpdates();
-
-  runApp(const ProviderContent());
 }
 
 class ProviderContent extends StatelessWidget {
@@ -68,8 +57,10 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    ref.read(permissionProvider.notifier).checkPermission();
-    init();
+    Future.microtask(() {
+      checkPermissionHandler();
+    });
+    checkRolEnForeground();
   }
 
   @override
@@ -80,7 +71,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   @override
   didChangeDependencies() {
-    init();
+    checkPermissionHandler();
     super.didChangeDependencies();
   }
 
@@ -91,24 +82,19 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       ref.read(permissionProvider.notifier).checkPermission();
     }
-    init();
+    checkPermissionHandler();
     super.didChangeAppLifecycleState(state);
   }
 
-  init() async {
+  checkPermissionHandler() async {
     Future.delayed(Duration.zero, () {
       ref.read(permissionProvider.notifier).checkPermission();
     });
-    // final container = ProviderContainer();
-    // final backgroundController =
-    //     container.read(backgroundServiceControllerProvider.notifier);
-    // await backgroundController.initialize();
-    // await backgroundController.startService();
+  }
 
-    // // Iniciar la conexión WebSocket
-    // final wsConnectionNotifier = container.read(wsConnectionProvider.notifier);
-    // wsConnectionNotifier.connect();
-    // await backgroundController.startService();
+  void checkRolEnForeground() async {
+    final tipoRol = ref.read(userCredentialsProvider).tipoRol;
+    debugPrint("👤 Rol detectado en el widget: $tipoRol");
   }
 
   @override

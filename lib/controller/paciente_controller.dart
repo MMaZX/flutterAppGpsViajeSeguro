@@ -5,6 +5,7 @@ import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/cuidador_model_data.dart';
 import 'package:app_viaje_seguro/model/pacientes_model.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -16,17 +17,16 @@ class PacienteController {
 
   PacienteController(this.context, this.ref);
 
-  final prefs = AuthPrefs();
-
   Future<List<PacientesModel>> getPacientes() async {
     try {
       Dio dio = Api(ref).dio;
 
-      final id = await AuthPrefs().getId();
+      int id = ref.read(userCredentialsProvider).id;
       final response = await dio.get(
         '/patient/byFamily',
         queryParameters: {"id": id},
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
 
@@ -47,7 +47,8 @@ class PacienteController {
       final response = await dio.post(
         '/patient',
         data: paciente.toJson(),
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       print(json);
@@ -66,7 +67,8 @@ class PacienteController {
 
       final response = await dio.delete(
         '/patient/$id',
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       print(json);
@@ -81,7 +83,8 @@ class PacienteController {
       Dio dio = Api(ref).dio;
       final response = await dio.get(
         '/patient/cuidador',
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       List<DataFormModelPage> list = [];
@@ -99,7 +102,8 @@ class PacienteController {
       Dio dio = Api(ref).dio;
       final response = await dio.get(
         '/patient/familiar',
-        options: await prefs.setDioOptions(),
+        options:
+            await ref.read(userCredentialsProvider.notifier).getDioOptions(),
       );
       final json = response.data;
       List<DataFormModelPage> list = [];

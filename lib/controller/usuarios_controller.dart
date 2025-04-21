@@ -6,8 +6,9 @@ import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/model/usuario_model.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
-import 'package:app_viaje_seguro/services/location_stream_notification.dart';
-import 'package:app_viaje_seguro/services/web_socket_service_background.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
+import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
+import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 // import 'package:dio/dio.dart';
@@ -21,18 +22,16 @@ class UsuariosController {
 
   UsuariosController(this.context, this.ref);
 
-  final prefs = AuthPrefs();
-
   Future<bool> updateUsuario(UsuarioModelData data, String password) async {
     try {
+      final options =
+          ref.read(userCredentialsProvider.notifier).getDioOptions();
       final api = Api(ref).dio;
-      final response = await api.put(
+      await api.put(
         '/users/update',
         data: data.toJson(password),
-        options: await prefs.setDioOptions(),
+        options: await options,
       );
-      print(response.data);
-
       Navigator.pushAndRemoveUntil(
           context,
           CupertinoPageRoute(
@@ -59,15 +58,15 @@ class UsuariosController {
       final data = json['data'];
       final user = ResponseUserModel.fromJson(data);
 
-      setCorreo(user.email);
-      setFaceid(user.faceIdToken.toString());
-      setToken(user.token);
+      final userNotifier = ref.read(userCredentialsProvider.notifier);
+      await userNotifier.setCorreo(user.email);
+      await userNotifier.setFaceId(user.faceIdToken.toString());
+      await userNotifier.setToken(user.token);
 
-      if (user.faceIdToken == null) {
-        setTipoAuth(AuthType.email.name);
-      } else {
-        setTipoAuth(AuthType.faceid.name);
-      }
+      final tipoAuth = user.faceIdToken == null 
+          ? AuthType.email.name 
+          : AuthType.faceid.name;
+      await userNotifier.setTipoAuth(tipoAuth);
       // isBackReturn(context);
       return true;
     } catch (e) {
@@ -92,13 +91,13 @@ class UsuariosController {
       final user = LoginResponse.fromJson(json['data']);
       isBackReturn(context);
       // RESPONSE
-      setCorreo(email);
-      setTipoRol(user.user.rol);
-      setId(user.user.id.toString());
-      // OTROS DATOS
-      setFaceid(faceIdToken);
-      setTipoAuth(tipo.name);
-      setToken(user.token);
+      final userNotifier = ref.read(userCredentialsProvider.notifier);
+      await userNotifier.setCorreo(email);
+      await userNotifier.setTipoRol(user.user.rol);
+      await userNotifier.setId(user.user.id);
+      await userNotifier.setFaceId(faceIdToken);
+      await userNotifier.setTipoAuth(tipo.name);
+      await userNotifier.setToken(user.token);
       isBackReturn(context);
 
       ref.watch(wsConnectionProvider.notifier).sendMessage({
@@ -106,7 +105,7 @@ class UsuariosController {
         "userType": user.user.rol.toLowerCase().toString(),
         "userId": user.user.id,
       });
-      ref.read(locationStreamProvider.notifier).start();
+      ref.read(locationStreamProvider.notifier).startLocationStream();
       return true;
     } catch (e) {
       isBackReturn(context);
@@ -115,81 +114,18 @@ class UsuariosController {
     }
   }
 
-  Future<void> setId(String value) async {
-    try {
-      if (value.isEmpty) {
-        throw "El id no puede estar vacio";
-      }
-      final prefs = await SharedPreferences.getInstance();
-      final id = int.parse(value);
-      prefs.setInt(SharedToken.clienteId, id);
-    } catch (e) {
-      throw ExceptionsUtils(e).toString();
-    }
-  }
-
-  Future<void> setTipoRol(String value) async {
-    try {
-      if (value.isEmpty) {
-        throw "Tipo de rol vacio";
-      }
-
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString(SharedToken.clienteTipoRol, value);
-    } catch (e) {
-      throw ExceptionsUtils(e).toString();
-    }
-  }
-
-  Future<void> setToken(String value) async {
-    try {
-      if (value.isEmpty) {
-        throw "Token vacio";
-      }
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString(SharedToken.clienteToken, value);
-    } catch (e) {
-      throw ExceptionsUtils(e).toString();
-    }
-  }
-
-  Future<void> setCorreo(String value) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString(SharedToken.clienteEmail, value);
-    } catch (e) {
-      throw ExceptionsUtils(e).toString();
-    }
-  }
-
-  Future<void> setFaceid(String value) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString(SharedToken.clienteFaceId, value);
-    } catch (e) {
-      throw ExceptionsUtils(e).toString();
-    }
-  }
-
-  Future<void> setTipoAuth(String value) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString(SharedToken.clienteTipo, value);
-    } catch (e) {
-      throw ExceptionsUtils(e).toString();
-    }
-  }
-
   Future<UsuarioModelData> getUsersById() async {
     try {
       Dio api = Api(ref).dio;
-      int id = await AuthPrefs().getId();
+      int id = ref.read(userCredentialsProvider).id;
+      final options =
+          ref.read(userCredentialsProvider.notifier).getDioOptions();
       final response = await api.get(
         '/users/id',
         queryParameters: {
           'id': id,
         },
-        options: await prefs.setDioOptions(),
+        options: await options,
       );
       final json = response.data;
       // print(json);
@@ -198,63 +134,37 @@ class UsuariosController {
       throw ExceptionsUtils(e).toString();
     }
   }
-}
-
-enum AuthType { email, faceid }
-
-class AuthPrefs {
-  Future<bool> isLoggedIn() async {
-    final token = await getId();
-    final rol = await getTipoRol();
-    return token != 0 && rol.isNotEmpty;
-  }
 
   Future<int> getId() async {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getInt(SharedToken.clienteId);
     if (id == null || id == 0) {
       return 0;
-      throw "El id no puede estar vacío";
+      // throw "El id no puede estar vacío";
     }
     return id;
   }
-
-  Future<String> getTipoRol() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(SharedToken.clienteTipoRol) ?? "";
-  }
-
-  Future<String> getCorreo() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(SharedToken.clienteEmail) ?? "";
-  }
-
-  Future<String> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(SharedToken.clienteToken) ?? "";
-  }
-
-  Future<String> getFaceId() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(SharedToken.clienteFaceId) ?? "";
-  }
-
-  Future<String> getTipoAuth() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(SharedToken.clienteTipo) ?? "";
-  }
-
-  Future<Options> setDioOptions() async {
-    final token = await getToken();
-    return Options(
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    );
-  }
 }
+
+enum AuthType { email, faceid }
+
+// class AuthPrefs {
+//   Future<String> getToken() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     return prefs.getString(SharedToken.clienteToken) ?? "";
+//   }
+
+//   Future<Options> setDioOptions() async {
+//     final token = await getToken();
+//     return Options(
+//       headers: {
+//         'Authorization': 'Bearer $token',
+//         'Content-Type': 'application/json',
+//         'Accept': 'application/json',
+//       },
+//     );
+//   }
+// }
 
 class LoginResponse {
   final String token;
