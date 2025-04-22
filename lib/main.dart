@@ -5,7 +5,9 @@ import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/background_services.dart';
+import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
+import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +18,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 String ACCESS_TOKEN =
     "pk.eyJ1IjoiamVhc29uY3VlcyIsImEiOiJjbTJ1bnQ5cTYwMzl5MmlvaW5mY29vOHFhIn0.SRxhLbsSJ0F6GRL5mKXULA";
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MapboxOptions.setAccessToken(ACCESS_TOKEN);
@@ -23,19 +26,23 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  final ProviderContainer provider = ProviderContainer();
-  provider.read(notificationServiceProvider).initialize(); // 1. NOTIFICACIONES
+  final container = ProviderContainer();
+  // ✅ Ejecutar todo dentro del ProviderScope
+  await container.read(notificationServiceProvider).initialize();
 
   final backgroundServices =
-      provider.read(backgroundServiceControllerProvider.notifier);
-  backgroundServices.initialize(); // 2. SERVICIO EN SEGUNDO PLANO
-  backgroundServices.startService(); // 3. INICIA EL SERVICIO EN SEGUNDO PLANO
+      container.read(backgroundServiceControllerProvider.notifier);
+  await backgroundServices.initialize();
+  await backgroundServices.startService();
 
-  final permissionHandlerServices = provider.read(permissionProvider.notifier);
-  await permissionHandlerServices.checkPermission(); // 4. PERMISOS
+  final permissionHandlerServices = container.read(permissionProvider.notifier);
+  await permissionHandlerServices.checkPermission();
 
   runApp(
-    const ProviderContent(),
+    UncontrolledProviderScope(
+      container: container,
+      child: const ProviderContent(),
+    ),
   );
 }
 
@@ -68,10 +75,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     Future.microtask(() {
-      ref
-          .read(backgroundServiceControllerProvider.notifier)
-          .refreshBackground();
       checkPermissionHandler();
+      ref.read(wsConnectionProvider.notifier).connect();
+      ref.read(locationStreamProvider.notifier).startLocationStream();
     });
   }
 
@@ -99,9 +105,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   }
 
   checkPermissionHandler() async {
-    Future.delayed(Duration.zero, () {
-      ref.read(permissionProvider.notifier).checkPermission();
-    });
   }
 
   void checkRolEnForeground() async {

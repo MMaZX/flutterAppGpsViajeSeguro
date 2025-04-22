@@ -45,22 +45,35 @@ class WSConnectionNotifier extends StateNotifier<WebSocketChannel?> {
 
   void connect() async {
     log("✔️ Iniciando conexión WebSocket...");
+
+    // Si ya hay una conexión activa, ciérrala antes de continuar
+    if (state != null) {
+      log("🔁 Ya existe una instancia WebSocket, cerrando conexión previa...");
+      try {
+        // await state?.sink
+        //     .close(status.goingAway); // Cierra con código de salida limpio
+        state?.sink.close();
+      } catch (e) {
+        log("❌ Error al cerrar la conexión existente: $e");
+      }
+      state = null;
+      isConnected = false;
+      _closeTimers();
+    }
+
     try {
       final ipAddress = Uri.parse(ref.read(connectionProvider).ipAddress).host;
       final wsUri = Uri.parse('ws://$ipAddress:3000');
       log("🔌 Intentando conectar a: $wsUri");
 
-      // Intentar notificar, pero manejar posibles errores
       final channel = WebSocketChannel.connect(wsUri);
       state = channel;
 
       try {
         await channel.ready;
-        // Si llega aquí, la conexión fue exitosa
         String message = "Conexión WebSocket establecida correctamente. $wsUri";
         createNotification("Conexión WebSocket", message);
         _updateStateNotifier(channel, message, true);
-        // isConnected = true;
       } catch (e) {
         log("❌ Error al esperar la conexión: $e");
         isConnected = false;
@@ -89,10 +102,6 @@ class WSConnectionNotifier extends StateNotifier<WebSocketChannel?> {
           } catch (e) {
             log("❌ Error procesando mensaje WS: $e");
           }
-
-          // Aquí puedes manejar los mensajes recibidos
-          // _updateStateNotifier(channel, "Conexión WebSocket activa", true);
-          // log("📩 Mensaje recibido: $message");
         },
         onError: (error) {
           _updateStateNotifier(

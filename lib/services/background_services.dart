@@ -47,8 +47,8 @@ class BackgroundServiceController extends StateNotifier<bool> {
         initialNotificationContent: content,
       ),
       iosConfiguration: IosConfiguration(
-        autoStart: false,
-        onForeground: onStart,
+        autoStart: true,
+        // onForeground: onStart,
         onBackground: (service) => true,
       ),
     );
@@ -64,11 +64,6 @@ class BackgroundServiceController extends StateNotifier<bool> {
   Future<void> stopService() async {
     _service.invoke('stopService');
     state = false;
-  }
-
-  // Reiniciar el servicio
-  Future<void> restartOnService() async {
-    //
   }
 
   // Actualizar la notificación del servicio
@@ -150,10 +145,6 @@ void onStart(ServiceInstance service) async {
   final notificationService = provider.read(notificationServiceProvider);
   await notificationService.initialize();
 
-  service.on('sendData').listen((event) {
-    print('📦 Recibido sendData con: $event');
-    // Puedes guardar algo, mandar por websocket, etc.
-  });
 
   // Listener para refrescar TODO el estado del isolate
   service.on('refreshData').listen((event) async {

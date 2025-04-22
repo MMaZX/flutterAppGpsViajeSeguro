@@ -35,6 +35,9 @@ class _MapaLocationPacientesState extends ConsumerState<MapScreen> {
   void dispose() {
     // Limpiamos el controlador del TextField al destruir el estado
     _searchController.dispose();
+    // if (mounted) {
+    //   ref.read(mapasProviders.notifier).dispose();
+    // }
     super.dispose();
   }
 

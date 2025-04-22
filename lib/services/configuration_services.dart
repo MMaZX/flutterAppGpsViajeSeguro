@@ -28,11 +28,6 @@ class ConfigurationServices {
   }
 
   Future<void> initOnBackground(ServiceInstance service) async {
-    // 2. Configurar el servicio en segundo plano
-    final backgroundServices =
-        ref.read(backgroundServiceControllerProvider.notifier);
-    await backgroundServices.restartOnService();
-
     // 3. Inicializar y conectar el WebSocket
     final webSocketServices = ref.read(wsConnectionProvider.notifier);
     webSocketServices.connect();
@@ -96,6 +91,7 @@ class ConfigurationServices {
         await service.stopSelf();
       }
     });
+
     // 5. Establecer ciclos periódicos si son necesarios
     Timer.periodic(const Duration(seconds: 10), (timer) async {
       if (service is AndroidServiceInstance) {
@@ -106,5 +102,7 @@ class ConfigurationServices {
         }
       }
     });
+
+
   }
 }
