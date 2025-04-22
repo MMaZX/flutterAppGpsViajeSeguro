@@ -11,6 +11,7 @@ import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
+import 'package:app_viaje_seguro/services/background_services.dart';
 import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
@@ -131,7 +132,10 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     const SizedBox(height: 30),
                     ShadButton(
                       onPressed: () {
-                        ref.watch(wsConnectionProvider.notifier).connect();
+                        ref
+                            .read(backgroundServiceControllerProvider.notifier)
+                            .refreshBackground();
+                        ref.watch(wsConnectionProvider.notifier).restart();
 
                         Navigator.push(
                             context,

@@ -1,7 +1,9 @@
 // map_controller.dart
 import 'dart:async'; // Necesario para StreamSubscription
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data'; // Necesario para Uint8List
+import 'dart:ui';
 
 import 'package:app_viaje_seguro/main.dart'; // Asegúrate que ACCESS_TOKEN esté aquí o importado correctamente
 import 'package:app_viaje_seguro/mapas/mapas_state.dart'; // Asegúrate que la ruta sea correcta
@@ -61,17 +63,118 @@ class MapasNotifierController extends StateNotifier<MapState> {
   MapboxMap? _mapboxMap;
   StreamSubscription<geo.Position>? _positionStreamSubscription;
   final Dio _dio = Dio(); // Usar una instancia de Dio
-
+  PointAnnotationManager? _pointAnnotationManager;
+  PointAnnotation? _currentMarker;
   MapasNotifierController() : super(MapState()) {
     // Puedes iniciar la solicitud de permisos/ubicación aquí o llamando a un método desde la UI
     // requestLocationPermissionAndStartUpdates();
+    _initializePointAnnotationManager();
   }
+
+  Future<void> _initializePointAnnotationManager() async {
+    _pointAnnotationManager =
+        await _mapboxMap?.annotations.createPointAnnotationManager();
+  }
+
+  /// Crea o reemplaza un marcador en la ubicación especificada
+  Future<void> crearOReemplazarMarcador(double lng, double lat) async {
+    if (_mapboxMap == null) {
+      return;
+    }
+
+    // Inicializa el gestor de anotaciones si aún no existe
+    if (_pointAnnotationManager == null) {
+      await _initializePointAnnotationManager();
+    }
+
+    // Carga la imagen para el marcador (puedes reemplazar esto con tu propio asset)
+    ByteData bytes;
+    try {
+      bytes = await rootBundle.load('assets/red_marker.png');
+    } catch (e) {
+      const size = 100;
+      const halfSize = size ~/ 2;
+
+      final recorder = PictureRecorder();
+      final canvas = Canvas(recorder);
+
+// Dibuja un pin en lugar de un círculo
+      final paint = Paint()..color = Colors.blue;
+      final shadowPaint = Paint()
+        ..color = Colors.black.withOpacity(0.3)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+
+// Dibuja sombra
+      canvas.drawCircle(Offset(halfSize.toDouble(), halfSize.toDouble() + 2),
+          halfSize * 0.8, shadowPaint);
+
+// Dibuja el cuerpo del pin
+      Path pinPath = Path()
+        ..moveTo(halfSize.toDouble(), size.toDouble())
+        ..lineTo(halfSize * 0.6, halfSize * 1.2)
+        ..arcTo(
+            Rect.fromCircle(
+                center: Offset(halfSize.toDouble(), halfSize.toDouble()),
+                radius: halfSize * 0.8),
+            0.4 * pi,
+            1.2 * pi,
+            false)
+        ..lineTo(halfSize.toDouble(), size.toDouble())
+        ..close();
+
+      canvas.drawPath(pinPath, paint);
+
+// Dibuja un círculo en el centro del pin
+      final centerPaint = Paint()..color = Colors.white;
+      canvas.drawCircle(Offset(halfSize.toDouble(), halfSize.toDouble()),
+          halfSize * 0.5, centerPaint);
+
+      final picture = recorder.endRecording();
+      final img = await picture.toImage(size, size);
+      final pngBytes = await img.toByteData(format: ImageByteFormat.png);
+
+      bytes = pngBytes!;
+    }
+
+    final Uint8List imageData = bytes.buffer.asUint8List();
+
+    // Crea las opciones para el marcador
+    PointAnnotationOptions pointAnnotationOptions = PointAnnotationOptions(
+        geometry: Point(coordinates: Position(lng, lat)),
+        image: imageData,
+        iconSize: 1.0);
+
+    // Si ya existe un marcador, elimínalo
+    // if (_currentMarker != null) {
+    //   await _pointAnnotationManager?.delete(_currentMarker!);
+    // }
+
+    try {
+      if (_currentMarker != null && _pointAnnotationManager != null) {
+        _pointAnnotationManager?.delete(_currentMarker!);
+      }
+    } catch (e) {
+      debugPrint('Error al eliminar anotación: $e');
+    }
+
+    // Crea el nuevo marcador
+    _currentMarker =
+        await _pointAnnotationManager?.create(pointAnnotationOptions);
+  }
+
+/*
+
+
+ */
 
   // Método para limpiar recursos, especialmente el StreamSubscription
   @override
   void dispose() {
     _positionStreamSubscription?.cancel();
     super.dispose(); // Llama al dispose de StateNotifier si es necesario
+    if (_pointAnnotationManager != null && _mapboxMap != null) {
+      _mapboxMap!.annotations.removeAnnotationManager(_pointAnnotationManager!);
+    }
   }
 
   void setMapboxMap(MapboxMap mapboxMap) {
@@ -96,8 +199,6 @@ class MapasNotifierController extends StateNotifier<MapState> {
   Future<void> requestLocationPermissionAndStartUpdates() async {
     final hasPermission = await _checkAndRequestPermission();
     if (!hasPermission || _mapboxMap == null) {
-      print("Permiso de ubicación denegado o mapa no listo.");
-      // Podrías actualizar el estado para reflejar que no hay permisos
       return;
     }
 
@@ -116,7 +217,7 @@ class MapasNotifierController extends StateNotifier<MapState> {
       await _positionStreamSubscription?.cancel();
 
       // Configurar el stream de ubicación
-      final locationSettings = const geo.LocationSettings(
+      const locationSettings = geo.LocationSettings(
         accuracy: geo.LocationAccuracy.high,
         distanceFilter: 10, // Actualizar cada 10 metros
       );
@@ -190,6 +291,33 @@ class MapasNotifierController extends StateNotifier<MapState> {
       // Podrías intentar obtener la ubicación si no existe
       // await requestLocationPermissionAndStartUpdates();
     }
+  }
+
+  /// Cambia la ubicación actual en el estado y opcionalmente centra el mapa en ella.
+  Future<void> cambiarUbicacionActual(double lng, double lat) async {
+    if (_mapboxMap == null) {
+      print("Mapa no inicializado.");
+      return;
+    }
+
+    final nuevaUbicacion = Point(coordinates: Position(lng, lat));
+
+    // Actualiza el estado con la nueva ubicación
+    state = state.copyWith(currentLocation: nuevaUbicacion);
+
+    // Crea o reemplaza el marcador
+    await crearOReemplazarMarcador(lng, lat);
+
+    // Opcionalmente centra el mapa en la nueva ubicación
+    await _mapboxMap!.flyTo(
+      CameraOptions(
+        center: Point(coordinates: nuevaUbicacion.coordinates),
+        zoom: 17.8,
+      ),
+      MapAnimationOptions(duration: 1500),
+    );
+    // if (flyToLocation) {
+    // }
   }
 
   // --- Métodos de Control del LocationComponent (Basados en el Ejemplo) ---

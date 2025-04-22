@@ -7,6 +7,7 @@ import 'package:app_viaje_seguro/model/usuario_model.dart';
 import 'package:app_viaje_seguro/model/usuarios_model.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
+import 'package:app_viaje_seguro/services/background_services.dart';
 import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
 import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
@@ -105,7 +106,11 @@ class UsuariosController {
         "userId": user.user.id,
       });
       isBackReturn(context);
-      ref.read(locationStreamProvider.notifier).startLocationStream();
+      ref
+          .read(backgroundServiceControllerProvider.notifier)
+          .refreshBackground();
+      ref.read(locationStreamProvider.notifier).checkPacientesGPS();
+
       return true;
     } catch (e) {
       isBackReturn(context);

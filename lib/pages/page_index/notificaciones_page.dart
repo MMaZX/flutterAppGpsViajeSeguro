@@ -10,6 +10,7 @@ import 'package:app_viaje_seguro/pages/constants.dart';
 import 'package:app_viaje_seguro/pages/modal_obtener_zona.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 class NotificacionIndexPage extends ConsumerStatefulWidget {
@@ -24,6 +25,8 @@ class _NotificacionIndexPageState extends ConsumerState<NotificacionIndexPage> {
   bool isActiveZonaSegura = false;
 
   ZonaSeguraModel data = ZonaSeguraModel();
+
+  Point? pointData;
 
   @override
   Widget build(BuildContext context) {
@@ -182,25 +185,54 @@ class _NotificacionIndexPageState extends ConsumerState<NotificacionIndexPage> {
                                           builder: (context) =>
                                               ModalObtenerZona(
                                             onPointSelected: (point) {
-                                              log("Ubicación seleccionada: $point");
+                                              if (point != null) {
+                                                log("Ubicación seleccionada: $point");
+
+                                                setState(() {
+                                                  pointData = point;
+                                                  data = data.copyWith(
+                                                    latDefault: double.parse(
+                                                        (point.coordinates.lat)
+                                                            .toStringAsFixed(
+                                                                4)),
+                                                    logDefault: double.parse(
+                                                        (point.coordinates.lng)
+                                                            .toStringAsFixed(
+                                                                4)),
+                                                  );
+                                                });
+                                              }
                                             },
                                           ),
                                         );
                                       },
                                       child: ShadCard(
                                         backgroundColor: Colors.transparent,
-                                        title: Text("",
-                                            style: theme.textTheme.h1.copyWith(
-                                              height: 0,
-                                              fontSize: 16,
-                                            )),
+                                        title: Text(
+                                          pointData == null
+                                              ? "Selecciona tu zona Segura"
+                                              : "Zona Segura seleccionada",
+                                          style: theme.textTheme.h1.copyWith(
+                                            height: 0,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        description: Text(
+                                          pointData == null
+                                              ? "Selecciona la zona segura en el mapa. Dale click para abrir el mapa"
+                                              : "Zona segura seleccionada: ${data.logDefault}, ${data.latDefault}",
+                                          style: theme.textTheme.muted.copyWith(
+                                            height: 0,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 10),
                                     ShadButton(
                                       onPressed: () =>
                                           ZonaSeguraController(context, ref)
-                                              .updateZonaSegura(data),
+                                              .updateZonaSegura(data, watch.id),
                                       child: const Expanded(
                                           child: Text(
                                         "Actualizar config. zona segura",

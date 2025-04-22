@@ -68,6 +68,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     Future.microtask(() {
+      ref
+          .read(backgroundServiceControllerProvider.notifier)
+          .refreshBackground();
       checkPermissionHandler();
     });
   }

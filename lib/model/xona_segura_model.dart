@@ -56,8 +56,9 @@ class ZonaSeguraModel {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(int pacienteid) {
     return {
+      'paciente_id' : pacienteid,
       'is_zona_segura': isZonaSegura,
       'intervalo_notificaciones': intervaloNotificaciones,
       'intervalo_inactividad': intervaloInactividad,

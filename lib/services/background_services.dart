@@ -86,6 +86,15 @@ class BackgroundServiceController extends StateNotifier<bool> {
     }
   }
 
+  Future<void> refreshBackground() async {
+    try {
+      _service.invoke('refreshData', <String, dynamic>{});
+      print('✅ Mensaje refreshData enviado al background');
+    } catch (e) {
+      print('❌ Error enviando refreshData: $e');
+    }
+  }
+
   // Actualizar la notificación del servicio con información de ubicación
   Future<void> updateLocationNotification(String title, String content) async {
     try {
@@ -144,6 +153,14 @@ void onStart(ServiceInstance service) async {
   service.on('sendData').listen((event) {
     print('📦 Recibido sendData con: $event');
     // Puedes guardar algo, mandar por websocket, etc.
+  });
+
+  // Listener para refrescar TODO el estado del isolate
+  service.on('refreshData').listen((event) async {
+    print('🔄 Refreshing background isolate');
+    final config = ConfigurationServices(provider);
+    await config.initOnBackground(
+        service); // o bien invoca sólo tu lógica de reconfiguración
   });
 
   final config = ConfigurationServices(provider);

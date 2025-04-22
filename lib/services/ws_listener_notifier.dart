@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:app_viaje_seguro/mapas/eventos/paciente_location_evento.dart';
+import 'package:app_viaje_seguro/mapas/eventos/paciente_notifier_evento.dart';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/background_services.dart';
 import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
 import 'package:flutter/cupertino.dart';
@@ -68,10 +71,28 @@ class WSConnectionNotifier extends StateNotifier<WebSocketChannel?> {
 
       channel.stream.listen(
         (message) {
-          // Aquí puedes manejar los mensajes recibidos
-          _updateStateNotifier(channel, "Conexión WebSocket activa", true);
+          try {
+            final decoded = jsonDecode(message);
+            final event = decoded['event'];
 
-          log("📩 Mensaje recibido: $message");
+            if (event == 'patient-location-update' &&
+                ref.watch(userCredentialsProvider).tipoRol.toLowerCase() !=
+                    "paciente") {
+              final location = PatientLocation.fromJson(decoded);
+              ref
+                  .read(patientLocationsProvider.notifier)
+                  .updateLocation(location);
+            }
+
+            _updateStateNotifier(channel, "Conexión WebSocket activa", true);
+            log("📩 Mensaje recibido: $message");
+          } catch (e) {
+            log("❌ Error procesando mensaje WS: $e");
+          }
+
+          // Aquí puedes manejar los mensajes recibidos
+          // _updateStateNotifier(channel, "Conexión WebSocket activa", true);
+          // log("📩 Mensaje recibido: $message");
         },
         onError: (error) {
           _updateStateNotifier(
@@ -88,8 +109,8 @@ class WSConnectionNotifier extends StateNotifier<WebSocketChannel?> {
 
   void disconnect() {
     _closeTimers();
-    // state?.sink.close();
-    state?.sink.close(status.goingAway);
+    state?.sink.close();
+    // state?.sink.close(status.goingAway);
     _updateStateNotifier(null, "🔌 Desconectando WebSocket...", false);
   }
 

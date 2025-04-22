@@ -141,10 +141,7 @@ class _ModalObtenerZonaState extends ConsumerState<ModalObtenerZona> {
                                   _showInfoSnackbar(ubicacionSeleccionada);
 
                                   // Espera 500 milisegundos y luego cierra todo
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 500), () {
-                                    isBackReturn(context);
-                                  });
+                                  isBackReturn(context);
                                 },
                               ),
                               CupertinoDialogAction(
