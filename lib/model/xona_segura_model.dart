@@ -5,6 +5,7 @@ class ZonaSeguraModel {
   final double radioProteccion;
   final double latDefault;
   final double logDefault;
+  
 
   ZonaSeguraModel({
     this.isZonaSegura = false,
@@ -14,6 +15,34 @@ class ZonaSeguraModel {
     this.latDefault = 0.0,
     this.logDefault = 0.0,
   });
+  bool get isEmpty {
+    return !isZonaSegura &&
+        intervaloNotificaciones == 0.0 &&
+        intervaloInactividad == 0.0 &&
+        radioProteccion == 0.0 &&
+        latDefault == 0.0 &&
+        logDefault == 0.0;
+  }
+
+
+  ZonaSeguraModel copyWith({
+    bool? isZonaSegura,
+    double? intervaloNotificaciones,
+    double? intervaloInactividad,
+    double? radioProteccion,
+    double? latDefault,
+    double? logDefault,
+  }) {
+    return ZonaSeguraModel(
+      isZonaSegura: isZonaSegura ?? this.isZonaSegura,
+      intervaloNotificaciones:
+          intervaloNotificaciones ?? this.intervaloNotificaciones,
+      intervaloInactividad: intervaloInactividad ?? this.intervaloInactividad,
+      radioProteccion: radioProteccion ?? this.radioProteccion,
+      latDefault: latDefault ?? this.latDefault,
+      logDefault: logDefault ?? this.logDefault,
+    );
+  }
 
   factory ZonaSeguraModel.fromJson(Map<String, dynamic> json) {
     return ZonaSeguraModel(

@@ -1,23 +1,29 @@
 import 'dart:developer';
 import 'dart:ui';
+import 'package:app_viaje_seguro/firebase_options.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/background_services.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 String ACCESS_TOKEN =
     "pk.eyJ1IjoiamVhc29uY3VlcyIsImEiOiJjbTJ1bnQ5cTYwMzl5MmlvaW5mY29vOHFhIn0.SRxhLbsSJ0F6GRL5mKXULA";
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // DartPluginRegistrant.ensureInitialized();
-  final ProviderContainer provider = ProviderContainer();
+  MapboxOptions.setAccessToken(ACCESS_TOKEN);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
+  final ProviderContainer provider = ProviderContainer();
   provider.read(notificationServiceProvider).initialize(); // 1. NOTIFICACIONES
 
   final backgroundServices =

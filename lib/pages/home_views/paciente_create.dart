@@ -24,6 +24,7 @@ class _CrearPacientePageState extends ConsumerState<CrearPacientePage> {
   @override
   Widget build(BuildContext context) {
     final controller = PacienteController(context, ref);
+    final textTheme = ShadTheme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Crear pacientes"),
@@ -34,14 +35,60 @@ class _CrearPacientePageState extends ConsumerState<CrearPacientePage> {
               child: ListView(
             padding: const EdgeInsets.all(15),
             children: [
+              ShadCard(
+                padding: const EdgeInsets.all(15),
+                title: Text(
+                  "Actualizar teléfono de contacto",
+                  style: textTheme.h3.copyWith(
+                    height: 0,
+                    fontSize: 20,
+                  ),
+                ),
+                description: Text(
+                  "Ingresa un número para recibir notificaciones por WhatsApp.",
+                  style: textTheme.muted.copyWith(
+                    height: 0,
+                  ),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.only(top: 15),
+                  child: ShadInputFormField(
+                    decoration: inputDecoration,
+                    label: const Text("Teléfono del familiar"),
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    onChanged: (p0) => paciente.phone_familiar = p0,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ShadCard(
+                padding: const EdgeInsets.all(15),
+                title: Text(
+                  "Crear los datos del paciente",
+                  style: textTheme.h3.copyWith(
+                    height: 0,
+                    fontSize: 20,
+                  ),
+                ),
+                description: Text(
+                  "Crea los datos de tu paciente respectivamente, el usuario y contraseña serán utilizados para el acceso a la aplicación.",
+                  style: textTheme.muted.copyWith(
+                    height: 0,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
               ShadInputFormField(
                 decoration: inputDecoration,
-                label: const Text("Nombre de usuario del paciente"),
+                label: const Text("Usuario del paciente"),
                 onChanged: (value) => paciente.user = value,
               ),
               ShadInputFormField(
                 decoration: inputDecoration,
-                label: const Text("Nombres y apellidos"),
+                label: const Text("Nombres y apellidos del paciente"),
                 onChanged: (value) {
                   paciente.name = value;
                 },
@@ -207,7 +254,7 @@ class _SelectParentescoState extends ConsumerState<SelectParentesco> {
       subtitle: SizedBox(
         width: double.maxFinite,
         child: ShadSelect<String>(
-          placeholder: const Text("Selecciona un parentesco"),
+          placeholder: const Text("Parentesco"),
           options: const [
             ShadOption(value: "PADRE", child: Text("PADRE")),
             ShadOption(value: "MADRE", child: Text("MADRE")),

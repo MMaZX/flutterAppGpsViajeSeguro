@@ -38,7 +38,6 @@ class LocationStreamNotifier extends StateNotifier<bool> {
   }
 
   Future<void> createStreamConnection() async {
-    isPacienteActive = true;
     // log("🟢 Checkeamos permisos...");
     // Verificar permisos de ubicación
     // await ref.read(permissionProvider.notifier).checkPermission();
@@ -53,6 +52,8 @@ class LocationStreamNotifier extends StateNotifier<bool> {
           timeLimit: Duration(seconds: 5),
         ),
       ).listen((position) {
+        isPacienteActive = true;
+
         log("📍 Nueva ubicación: ${position.latitude}, ${position.longitude}");
         // Enviar la ubicación al servidor WebSocket
         sendLocationWS(position);
@@ -129,7 +130,7 @@ class LocationStreamNotifier extends StateNotifier<bool> {
     bool isActive = await isPacienteUser();
 
     log("🔍 Verificando si el usuario es paciente y el stream no está activo...");
-    if (isActive && !isPacienteActive) {
+    if (isActive) {
       log("🟢 Condiciones cumplidas, iniciando conexión al stream de ubicación...");
       await createStreamConnection();
     } else {

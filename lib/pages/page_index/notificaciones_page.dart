@@ -1,9 +1,13 @@
+import 'dart:developer';
+
 import 'package:app_viaje_seguro/config/constants.dart';
 import 'package:app_viaje_seguro/controller/api_controller.dart';
 import 'package:app_viaje_seguro/controller/paciente_controller.dart';
+import 'package:app_viaje_seguro/controller/zona_segura_controller.dart';
 import 'package:app_viaje_seguro/model/pacientes_model.dart';
 import 'package:app_viaje_seguro/model/xona_segura_model.dart';
 import 'package:app_viaje_seguro/pages/constants.dart';
+import 'package:app_viaje_seguro/pages/modal_obtener_zona.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -18,9 +22,8 @@ class NotificacionIndexPage extends ConsumerStatefulWidget {
 
 class _NotificacionIndexPageState extends ConsumerState<NotificacionIndexPage> {
   bool isActiveZonaSegura = false;
-  double _notificationInterval = 5.0;
-  double _notificationExcededInterval = 1.0;
-  double _notificationinactivoInterval = 1.0;
+
+  ZonaSeguraModel data = ZonaSeguraModel();
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +35,7 @@ class _NotificacionIndexPageState extends ConsumerState<NotificacionIndexPage> {
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: const Text("Configuración de notificaciones"),
+          title: const Text("Notificaciones/Zona Segura"),
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
@@ -47,135 +50,195 @@ class _NotificacionIndexPageState extends ConsumerState<NotificacionIndexPage> {
               const SizedBox(
                   width: double.maxFinite, child: ChangePacientesByFamiliar()),
               Expanded(
-                child: watch.name.isEmpty
-                    ? const EmptyWidget(
-                        "Selecciona un paciente para configurar su información")
-                    : watchNotifications.when(
-                        data: (data) {
-                          if (data.latDefault == 0 && data.logDefault == 0) {
-                            return const EmptyWidget(
-                                "No tienes notificaciones configuradas para este paciente O no existe.");
-                          }
-
-                          if (watchNotifications.isLoading) {
-                            const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          return ListView(
-                            padding: const EdgeInsets.all(15),
-                            children: [
-                              ShadSwitch(
-                                  label: Text(
-                                      "Zona Segura : ${isActiveZonaSegura ? "Activado" : "Desactivado"}"),
-                                  sublabel: const Text(
-                                      "Activa o desactiva las alertas de la zona segura"),
-                                  value: isActiveZonaSegura,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      isActiveZonaSegura = value;
-                                    });
-                                  }),
-                              ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(
-                                  "Intervalo de notificaciones (min):",
-                                  style: theme.textTheme.h3.copyWith(
-                                    height: 0,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                subtitle: Slider(
-                                  value: _notificationInterval,
-                                  min: 5,
-                                  max: 60,
-                                  divisions: 11,
-                                  label: "${_notificationInterval.toInt()} min",
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _notificationInterval = value;
-                                    });
-                                  },
-                                ),
-                                trailing: Text(
-                                    "${_notificationInterval.toInt()} min"),
-                              ),
-                              ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(
-                                  "Tiempo expuesto (min):",
-                                  style: theme.textTheme.h3.copyWith(
-                                    height: 0,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                subtitle: Slider(
-                                  value: _notificationExcededInterval,
-                                  min: 1,
-                                  max: 10,
-                                  divisions: 9,
-                                  label:
-                                      "${_notificationExcededInterval.toInt()} min",
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _notificationExcededInterval = value;
-                                    });
-                                  },
-                                ),
-                                trailing: Text(
-                                    "${_notificationExcededInterval.toInt()} min"),
-                              ),
-                              ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(
-                                  "Tiempo de inactividad del paciente (min):",
-                                  style: theme.textTheme.h3.copyWith(
-                                    height: 0,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                subtitle: Slider(
-                                  value: _notificationinactivoInterval,
-                                  min: 1,
-                                  max: 60,
-                                  divisions: 30,
-                                  label:
-                                      "${_notificationinactivoInterval.toInt()} min",
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _notificationinactivoInterval = value;
-                                    });
-                                  },
-                                ),
-                                trailing: Text(
-                                    "${_notificationinactivoInterval.toInt()} min"),
-                              ),
-                            ],
-                          );
-                        },
-                        error: (error, stackTrace) => Column(
+                child: watchNotifications.isLoading
+                    ? Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.all(25),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.error_outline,
-                                size: 50, color: Colors.red),
-                            Text(
-                              error.toString(),
-                              style: theme.textTheme.h3.copyWith(
-                                height: 0,
-                                fontSize: 16,
-                              ),
-                            ),
-                            ShadButton(
-                              onPressed: () => ref
-                                  .refresh(fetchNotificationsPacienteProvider),
-                              child: const Text("Actualizar"),
-                            ),
+                            Text("Cargando notificaciones para este paciente"),
+                            SizedBox(height: 10),
+                            ShadProgress(),
                           ],
                         ),
-                        loading: () => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
+                      )
+                    : watch.name.isEmpty
+                        ? const EmptyWidget(
+                            "Selecciona un paciente para configurar su información")
+                        : watchNotifications.when(
+                            data: (zonaSeguraData) {
+                              if (data.isEmpty) {
+                                data = zonaSeguraData;
+                              }
+
+                              return RefreshIndicator(
+                                onRefresh: () async => ref.invalidate(
+                                    fetchNotificationsPacienteProvider),
+                                child: ListView(
+                                  padding: const EdgeInsets.all(15),
+                                  children: [
+                                    ShadCard(
+                                      title: Text(
+                                        "Advertencia",
+                                        style: theme.textTheme.h1.copyWith(
+                                          height: 0,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      description: Text(
+                                        "Si desactivas la zona segura, no recibirás notificaciones de seguridad",
+                                        style: theme.textTheme.muted.copyWith(
+                                          height: 0,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      child: Container(
+                                        padding: const EdgeInsets.only(top: 15),
+                                        child: ShadSwitch(
+                                            label: Text(
+                                              "Zona Segura : ${data.isZonaSegura ? "Activado" : "Desactivado"}",
+                                              style:
+                                                  theme.textTheme.h1.copyWith(
+                                                height: 0,
+                                                color: data.isZonaSegura
+                                                    ? theme.colorScheme.primary
+                                                    : theme.colorScheme.muted,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            sublabel: const Text(
+                                                "Activa o desactiva las alertas de la zona segura"),
+                                            value: data.isZonaSegura,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                data = data.copyWith(
+                                                  isZonaSegura: value,
+                                                );
+                                              });
+                                            }),
+                                      ),
+                                    ),
+                                    CustomSliderTile(
+                                      title:
+                                          "Intervalo de notificaciones (min):",
+                                      subtitle:
+                                          "Tiempo entre notificaciones de seguridad en minutos.",
+                                      value: data.intervaloNotificaciones,
+                                      min: 0,
+                                      max: 20,
+                                      divisions: 20,
+                                      labelBuilder: (val) =>
+                                          "${val.toInt()} min",
+                                      onChanged: (val) {
+                                        setState(() {
+                                          data = data.copyWith(
+                                            intervaloNotificaciones: val,
+                                          );
+                                        });
+                                      },
+                                    ),
+                                    CustomSliderTile(
+                                      title: "Tiempo de inactividad (min):",
+                                      subtitle:
+                                          "Cuanto tiempo sin movimiento se considera inactividad, en minutos.",
+                                      value: data.intervaloInactividad,
+                                      min: 0,
+                                      max: 20,
+                                      divisions: 20,
+                                      labelBuilder: (val) =>
+                                          "${val.toInt()} min",
+                                      onChanged: (val) {
+                                        setState(() {
+                                          data = data.copyWith(
+                                            intervaloInactividad: val,
+                                          );
+                                        });
+                                      },
+                                    ),
+                                    CustomSliderTile(
+                                      title: "Radio de protección (metros):",
+                                      subtitle:
+                                          "Puedes moverte en un radio de ${data.radioProteccion.toInt()} metros.",
+                                      value: data.radioProteccion,
+                                      min: 0,
+                                      max: 500,
+                                      divisions: 50,
+                                      labelBuilder: (val) =>
+                                          "${data.radioProteccion.toInt()} m",
+                                      onChanged: (val) {
+                                        setState(() {
+                                          data = data.copyWith(
+                                            radioProteccion: val,
+                                          );
+                                        });
+                                      },
+                                    ),
+                                    InkWell(
+                                      borderRadius: BorderRadius.circular(10),
+                                      onTap: () async {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) =>
+                                              ModalObtenerZona(
+                                            onPointSelected: (point) {
+                                              log("Ubicación seleccionada: $point");
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      child: ShadCard(
+                                        backgroundColor: Colors.transparent,
+                                        title: Text("",
+                                            style: theme.textTheme.h1.copyWith(
+                                              height: 0,
+                                              fontSize: 16,
+                                            )),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    ShadButton(
+                                      onPressed: () =>
+                                          ZonaSeguraController(context, ref)
+                                              .updateZonaSegura(data),
+                                      child: const Expanded(
+                                          child: Text(
+                                        "Actualizar config. zona segura",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      )),
+                                    )
+                                  ],
+                                ),
+                              );
+                            },
+                            error: (error, stackTrace) => Container(
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(15),
+                              child: ShadCard(
+                                description: Text(
+                                  error.toString(),
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.h3.copyWith(
+                                    height: 0,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: ShadButton.outline(
+                                    onPressed: () => ref.refresh(
+                                        fetchNotificationsPacienteProvider),
+                                    child: const Expanded(
+                                        child: Text("Actualizar")),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
               ),
             ],
           ),
@@ -269,3 +332,72 @@ final fetchNotificationsPacienteProvider =
     throw ExceptionsUtils(e).toString();
   }
 });
+
+class CustomSliderTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final double value;
+  final double min;
+  final double max;
+  final int divisions;
+  final String Function(double) labelBuilder;
+  final ValueChanged<double> onChanged;
+
+  const CustomSliderTile({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.divisions,
+    required this.labelBuilder,
+    required this.onChanged,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ShadTheme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: ShadCard(
+        padding: const EdgeInsets.all(10),
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.h4.copyWith(
+                      fontSize: 15,
+                      height: 0,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.muted.copyWith(
+                      fontSize: 14,
+                      height: 0,
+                    ),
+                  ),
+                ],
+              )),
+          subtitle: Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            label: labelBuilder(value),
+            onChanged: onChanged,
+          ),
+          trailing: Text(labelBuilder(value)),
+        ),
+      ),
+    );
+  }
+}

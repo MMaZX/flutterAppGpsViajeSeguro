@@ -80,6 +80,7 @@ class BodyCreatePacientes {
   int age;
   String genre;
   String phone;
+  String phone_familiar;
   String address;
   String parentesco;
   String image;
@@ -90,6 +91,7 @@ class BodyCreatePacientes {
     this.email = '',
     this.password = '',
     this.dni = '',
+    this.phone_familiar = '',
     this.age = 0,
     this.genre = '',
     this.phone = '',
@@ -105,6 +107,7 @@ class BodyCreatePacientes {
       'email': email,
       'password': password,
       'dni': dni,
+      'phone_familiar': phone_familiar,
       'age': age,
       'genre': genre,
       'phone': phone,
