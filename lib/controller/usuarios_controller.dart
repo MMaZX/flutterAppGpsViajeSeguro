@@ -89,7 +89,6 @@ class UsuariosController {
 
       final json = response.data;
       final user = LoginResponse.fromJson(json['data']);
-      final watch = ref.watch(wsConnectionProvider.notifier);
 
       isBackReturn(context);
       // RESPONSE
@@ -100,6 +99,7 @@ class UsuariosController {
       await userNotifier.setFaceId(faceIdToken);
       await userNotifier.setTipoAuth(tipo.name);
       await userNotifier.setToken(user.token);
+      final watch = ref.watch(wsConnectionProvider.notifier);
       watch.sendMessage({
         "type": "init",
         "userType": user.user.rol.toLowerCase().toString(),

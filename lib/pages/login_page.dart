@@ -65,7 +65,7 @@ class _LoginScreenPageState extends ConsumerState<LoginScreenPage> {
                 label: const Text("Contraseña"),
                 controller: passwordController,
                 obscureText: isObscure,
-                keyboardType: TextInputType.twitter,
+                // keyboardType: TextInputType.twitter,
               ),
               ShadSwitch(
                 label: const SizedBox(

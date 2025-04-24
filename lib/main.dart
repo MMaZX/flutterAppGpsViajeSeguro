@@ -74,23 +74,31 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    Future.microtask(() {
-      checkPermissionHandler();
-      ref.read(wsConnectionProvider.notifier).connect();
-      ref.read(locationStreamProvider.notifier).startLocationStream();
-    });
+    
+    checkPermissionHandler();
+    // Future.microtask(() {
+    //   checkPermissionHandler();
+    //   ref.read(wsConnectionProvider.notifier).connect();
+    //   ref.read(locationStreamProvider.notifier).startLocationStream();
+    // });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+    
   }
 
   @override
   didChangeDependencies() {
     checkPermissionHandler();
     super.didChangeDependencies();
+    
+    checkPermissionHandler();
+      //  checkPermissionHandler();
+      // ref.read(wsConnectionProvider.notifier).restart();
+      // ref.read(locationStreamProvider.notifier).checkPacientesGPS();
   }
 
   @override
@@ -99,12 +107,16 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     ref.read(observerAppProvider.notifier).update((state) => state);
     if (state == AppLifecycleState.resumed) {
       ref.read(permissionProvider.notifier).checkPermission();
-    }
     checkPermissionHandler();
+    }
     super.didChangeAppLifecycleState(state);
   }
 
   checkPermissionHandler() async {
+    // if(mounted) {
+    //   ref.read(wsConnectionProvider.notifier).restart();
+    //   ref.read(locationStreamProvider.notifier).checkPacientesGPS();
+    // }
   }
 
   void checkRolEnForeground() async {

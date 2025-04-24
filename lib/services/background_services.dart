@@ -1,3 +1,4 @@
+
 // Ahora, nuestro controlador de servicio en segundo plano
 import 'dart:async';
 import 'dart:developer';
@@ -138,15 +139,14 @@ class BackgroundServiceController extends StateNotifier<bool> {
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   //
-  WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   final provider = ProviderContainer();
 
   final notificationService = provider.read(notificationServiceProvider);
   await notificationService.initialize();
 
-
-  // Listener para refrescar TODO el estado del isolate
+  // Listener para refrescar todo el estado del isolate
   service.on('refreshData').listen((event) async {
     print('🔄 Refreshing background isolate');
     final config = ConfigurationServices(provider);

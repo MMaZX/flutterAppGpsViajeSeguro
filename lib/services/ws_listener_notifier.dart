@@ -85,6 +85,7 @@ class WSConnectionNotifier extends StateNotifier<WebSocketChannel?> {
       channel.stream.listen(
         (message) {
           try {
+            _updateStateNotifier(channel, "Conexión WebSocket activa", true);
             final decoded = jsonDecode(message);
             final event = decoded['event'];
 
@@ -97,7 +98,6 @@ class WSConnectionNotifier extends StateNotifier<WebSocketChannel?> {
                   .updateLocation(location);
             }
 
-            _updateStateNotifier(channel, "Conexión WebSocket activa", true);
             log("📩 Mensaje recibido: $message");
           } catch (e) {
             log("❌ Error procesando mensaje WS: $e");
@@ -134,11 +134,12 @@ class WSConnectionNotifier extends StateNotifier<WebSocketChannel?> {
   void sendMessage(Map<String, dynamic> message) {
     try {
       // print(isConnected);
-      if (!isConnected) {
-        log("⚠️ Intento de enviar mensaje sin conexión activa: $message");
+      // LA CONEXIÓN STATE ES LA QUE SE ENCARGA DE VERIFICAR EL DETALLE DEL WS.
+      if (state == null) {
         throw Exception(
             "La conexión del WS no está activa. No se puede enviar el mensaje. OPERACIÓN CANCELADA");
       }
+
       final jsonString = jsonEncode(message);
       log("📤 Enviando mensaje: $jsonString");
       state?.sink.add(jsonString);

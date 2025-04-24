@@ -30,11 +30,11 @@ class ConfigurationServices {
   Future<void> initOnBackground(ServiceInstance service) async {
     // 3. Inicializar y conectar el WebSocket
     final webSocketServices = ref.read(wsConnectionProvider.notifier);
-    webSocketServices.connect();
+    webSocketServices.restart();
 
     // 4. Iniciar la recopilación de ubicación (si es necesario)
     final locationServices = ref.read(locationStreamProvider.notifier);
-    await locationServices.startLocationStream();
+    await locationServices.checkPacientesGPS();
     // Escuchar eventos del servicio
     service.on('stopService').listen((event) async {
       await service.stopSelf();
