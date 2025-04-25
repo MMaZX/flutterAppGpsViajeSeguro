@@ -1,24 +1,36 @@
+import 'dart:developer';
+
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+enum WebSocketStatus { connecting, connected, disconnected, error }
 
 class WsConnectionState {
   final WebSocketChannel? channel;
-  final bool isConnected;
-  final String status;
+  final WebSocketStatus status;
+  final String message;
 
   const WsConnectionState({
     this.channel,
-    this.isConnected = false,
-    this.status = "No iniciado",
+    this.status = WebSocketStatus.disconnected,
+    this.message = "-",
   });
 
   WsConnectionState copyWith({
     WebSocketChannel? channel,
-    bool? isConnected,
-    String? status,
-  }) =>
-      WsConnectionState(
-        channel: channel ?? this.channel,
-        isConnected: isConnected ?? this.isConnected,
-        status: status ?? this.status,
-      );
+    WebSocketStatus? status,
+    String? message,
+  }) {
+    final updatedState = WsConnectionState(
+      channel: channel ?? this.channel,
+      status: status ?? this.status,
+      message: message ?? this.message,
+    );
+
+    log('WsConnectionState updated: '
+        'channel: ${channel != null ? "⚡" : "💤"}, '
+        'status: ${status != null ? status.name.toUpperCase() : "null"}, '
+        'message: ${message != null ? message.toString() : "null"}');
+
+    return updatedState;
+  }
 }

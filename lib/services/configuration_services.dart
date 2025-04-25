@@ -29,8 +29,8 @@ class ConfigurationServices {
 
   Future<void> initOnBackground(ServiceInstance service) async {
     // 3. Inicializar y conectar el WebSocket
-    final webSocketServices = ref.read(wsConnectionProvider.notifier);
-    webSocketServices.restart();
+    // final webSocketServices = ref.read(wsConnectionProvider.notifier);
+    // webSocketServices.restart();
 
     // 4. Iniciar la recopilación de ubicación (si es necesario)
     final locationServices = ref.read(locationStreamProvider.notifier);
@@ -92,16 +92,16 @@ class ConfigurationServices {
       }
     });
 
-    // 5. Establecer ciclos periódicos si son necesarios
-    Timer.periodic(const Duration(seconds: 10), (timer) async {
-      if (service is AndroidServiceInstance) {
-        if (await service.isForegroundService()) {
-          // Lógica adicional para tareas periódicas
-          webSocketServices.checkConnection();
-          locationServices.checkPacientesGPS();
-        }
-      }
-    });
+    // // 5. Establecer ciclos periódicos si son necesarios
+    // Timer.periodic(const Duration(seconds: 10), (timer) async {
+    //   if (service is AndroidServiceInstance) {
+    //     if (await service.isForegroundService()) {
+    //       // Lógica adicional para tareas periódicas
+    //       webSocketServices.checkConnection();
+    //       locationServices.checkPacientesGPS();
+    //     }
+    //   }
+    // });
 
 
   }

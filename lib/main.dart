@@ -1,13 +1,11 @@
 import 'dart:developer';
-import 'dart:ui';
 import 'package:app_viaje_seguro/firebase_options.dart';
 import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/permission_provider.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/background_services.dart';
-import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
-import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
+import 'package:app_viaje_seguro/services/ws_connection_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,11 +27,9 @@ void main() async {
   final container = ProviderContainer();
   // ✅ Ejecutar todo dentro del ProviderScope
   await container.read(notificationServiceProvider).initialize();
-
-  final backgroundServices =
-      container.read(backgroundServiceControllerProvider.notifier);
-  await backgroundServices.initialize();
-  await backgroundServices.startService();
+  container.read(backgroundServiceControllerProvider.notifier).initialize();
+  // await backgroundServices.initialize();
+  // await backgroundServices.startService();
 
   final permissionHandlerServices = container.read(permissionProvider.notifier);
   await permissionHandlerServices.checkPermission();
@@ -74,49 +70,38 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
-    checkPermissionHandler();
-    // Future.microtask(() {
-    //   checkPermissionHandler();
-    //   ref.read(wsConnectionProvider.notifier).connect();
-    //   ref.read(locationStreamProvider.notifier).startLocationStream();
-    // });
+    Future.microtask(() {
+      final ws = ref.read(wsConnectionProviderNotifier.notifier);
+      ws.checkConnection();
+      checkRolEnForeground();
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-    
   }
 
   @override
   didChangeDependencies() {
-    checkPermissionHandler();
     super.didChangeDependencies();
-    
-    checkPermissionHandler();
-      //  checkPermissionHandler();
-      // ref.read(wsConnectionProvider.notifier).restart();
-      // ref.read(locationStreamProvider.notifier).checkPacientesGPS();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     log("state : $state");
+    final ws = ref.read(wsConnectionProviderNotifier.notifier);
     ref.read(observerAppProvider.notifier).update((state) => state);
     if (state == AppLifecycleState.resumed) {
       ref.read(permissionProvider.notifier).checkPermission();
-    checkPermissionHandler();
+      BackgroundServices().setForeground();
+      ws.checkConnection();
+    } else {
+      BackgroundServices().setBackground();
+      // ws.checkConnection();
     }
     super.didChangeAppLifecycleState(state);
-  }
-
-  checkPermissionHandler() async {
-    // if(mounted) {
-    //   ref.read(wsConnectionProvider.notifier).restart();
-    //   ref.read(locationStreamProvider.notifier).checkPacientesGPS();
-    // }
   }
 
   void checkRolEnForeground() async {

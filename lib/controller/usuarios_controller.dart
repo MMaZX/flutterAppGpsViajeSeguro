@@ -9,6 +9,7 @@ import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/background_services.dart';
 import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
+import 'package:app_viaje_seguro/services/ws_connection_provider.dart';
 import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
@@ -99,7 +100,7 @@ class UsuariosController {
       await userNotifier.setFaceId(faceIdToken);
       await userNotifier.setTipoAuth(tipo.name);
       await userNotifier.setToken(user.token);
-      final watch = ref.watch(wsConnectionProvider.notifier);
+      final watch = ref.watch(wsConnectionProviderNotifier.notifier);
       watch.sendMessage({
         "type": "init",
         "userType": user.user.rol.toLowerCase().toString(),

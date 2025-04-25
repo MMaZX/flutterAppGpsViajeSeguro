@@ -11,9 +11,7 @@ import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
-import 'package:app_viaje_seguro/services/background_services.dart';
-import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
-import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
+
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -31,8 +29,6 @@ class _SesionPageState extends ConsumerState<SesionPage> {
   bool _isLoading = false;
 
   Future<void> _handleGoogleSignIn() async {
-                        updateWS();
-
     final googleAuthService = GoogleAuthService(ref);
     setState(() {
       _isLoading = true;
@@ -99,13 +95,6 @@ class _SesionPageState extends ConsumerState<SesionPage> {
     }
   }
 
-  updateWS()
- {
-  if(mounted) {
-      ref.read(wsConnectionProvider.notifier).restart();
-      ref.read(locationStreamProvider.notifier).checkPacientesGPS();
-    }
- }
   @override
   Widget build(BuildContext context) {
     final textTheme = ShadTheme.of(context).textTheme;
@@ -113,23 +102,23 @@ class _SesionPageState extends ConsumerState<SesionPage> {
       builder: (context, state) {
         return Scaffold(
             appBar: AppBar(
-              actions: [
-                ShadButton(
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (context) => const ConnectionManagerScreen(),
-                  ),
-                  icon: const Icon(LucideIcons.command),
-                ),
-                const IconChangeTheme(),
-                
-                ShadTooltip(
-                  builder: (context) => const Text("Actualiza la conexión al WS"),
-                  child: ShadButton(
-                    onPressed: () => updateWS(),
-                    icon: const Icon(LucideIcons.listRestart),
-                  ),
-                )
+              actions: const [
+                // ShadButton(
+                //   onPressed: () => showDialog(
+                //     context: context,
+                //     builder: (context) => const ConnectionManagerScreen(),
+                //   ),
+                //   icon: const Icon(LucideIcons.command),
+                // ),
+                IconChangeTheme(),
+                // ShadTooltip(
+                //   builder: (context) =>
+                //       const Text("Actualiza la conexión al WS"),
+                //   child: ShadButton(
+                //     onPressed: () => updateWS(),
+                //     icon: const Icon(LucideIcons.listRestart),
+                //   ),
+                // )
               ],
             ),
             body: Center(
@@ -150,11 +139,6 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     const SizedBox(height: 30),
                     ShadButton(
                       onPressed: () {
-                        updateWS();
-                        // ref
-                        //     .read(backgroundServiceControllerProvider.notifier)
-                        //     .refreshBackground();
-                        // ref.watch(wsConnectionProvider.notifier).restart();
                         Navigator.push(
                             context,
                             CupertinoPageRoute(
@@ -179,9 +163,6 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     ShadButton(
                       width: double.maxFinite,
                       onPressed: () {
-                        updateWS();
-
-                        // ref.watch(wsConnectionProvider.notifier).connect();
                         Navigator.push(
                             context,
                             CupertinoPageRoute(
@@ -203,8 +184,6 @@ class _SesionPageState extends ConsumerState<SesionPage> {
                     ShadButton.outline(
                       width: double.maxFinite,
                       onPressed: () {
-                        updateWS();
-
                         Navigator.push(
                           context,
                           CupertinoPageRoute(

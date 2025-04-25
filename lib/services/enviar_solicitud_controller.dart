@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
 import 'package:app_viaje_seguro/services/states/notifications_state.dart';
+import 'package:app_viaje_seguro/services/ws_connection_provider.dart';
 import 'package:app_viaje_seguro/services/ws_listener_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,11 +24,7 @@ class NotificationController {
     // Ya no necesitamos inicializar las notificaciones aquí
     // porque estamos usando el servicio centralizado
 
-    final isConnected = ref.read(wsConnectionProvider.notifier).isConnected;
-    if (!isConnected) {
-      log('No hay conexión WebSocket. No se puede escuchar mensajes.');
-      return;
-    }
+    final socket = ref.read(wsConnectionProviderNotifier);
 
     // WebSocket connection established.
     final idUsuario = ref.read(userCredentialsProvider).id;
@@ -36,11 +33,9 @@ class NotificationController {
       return;
     }
 
-    final socket = ref.read(wsConnectionProvider);
-    socket!.stream.listen((message) {
+    socket.channel?.stream.listen((message) {
       // Received message from WebSocket.
       final data = jsonDecode(message);
-
       if (data['event'] == 'enviar-solicitud') {
         // Event "enviar-solicitud" detected.
 
@@ -84,14 +79,12 @@ class NotificationController {
   Future sendNotificationToUser(
     NotificationsState notification,
   ) async {
-    final channel = ref.read(wsConnectionProvider);
-    if (channel == null) return;
+    final channel = ref.read(wsConnectionProviderNotifier.notifier);
 
     final message = {
       'event': 'enviar-solicitud',
       'data': notification.toMap(),
     };
-
-    channel.sink.add(jsonEncode(message));
+    channel.sendMessage(message);
   }
 }
