@@ -22,7 +22,7 @@ class LocationStreamNotifier extends StateNotifier<bool> {
     //
   }
 
-  bool isPacienteActive = false;
+
 
   // Iniciar el stream de ubicación
   Future<void> startLocationStream() async {
@@ -33,28 +33,20 @@ class LocationStreamNotifier extends StateNotifier<bool> {
       }
       await createStreamConnection();
     } catch (e) {
-      isPacienteActive = false;
       log("🔴 Error al iniciar el stream de ubicación: ${ExceptionsUtils(e).toString()}");
     }
   }
 
   Future<void> createStreamConnection() async {
-    // log("🟢 Checkeamos permisos...");
-    // Verificar permisos de ubicación
-    // await ref.read(permissionProvider.notifier).checkPermission();
-
-    // Iniciar el stream de ubicación
-    log("🟢 Iniciando el stream de ubicación...");
     try {
+      log("🟢 Iniciando el stream de ubicación...");
       geolocator.Geolocator.getPositionStream(
         locationSettings: const geolocator.LocationSettings(
           accuracy: geolocator.LocationAccuracy.high,
-          distanceFilter: 0, // Notificar cambios cada 10 metros
+          distanceFilter: 0,
           timeLimit: Duration(seconds: 5),
         ),
       ).listen((position) {
-        isPacienteActive = true;
-
         log("📍 Nueva ubicación: ${position.latitude}, ${position.longitude}");
         // Enviar la ubicación al servidor WebSocket
         sendLocationWS(position);
@@ -89,10 +81,8 @@ class LocationStreamNotifier extends StateNotifier<bool> {
         "Ubicación actualizada",
         "GEO: Lat: ${position.latitude}, Lng: ${position.longitude}",
       );
-
       log("✅ Ubicación enviada al servidor");
     } catch (e) {
-      isPacienteActive = false;
       log("❌ Error al enviar ubicación: $e");
     }
   }
@@ -108,21 +98,21 @@ class LocationStreamNotifier extends StateNotifier<bool> {
     return true;
   }
 
-  Future<void> checkPacientesGPS() async {
-    bool isActive = await isPacienteUser();
+  // Future<void> checkPacientesGPS() async {
+  //   bool isActive = await isPacienteUser();
 
-    log("🔍 Verificando si el usuario es paciente y el stream no está activo...");
-    if (isActive) {
-      log("🟢 Condiciones cumplidas, iniciando conexión al stream de ubicación...");
-      await createStreamConnection();
-    } else {
-      log("⚠️ Condiciones no cumplidas. isActive: $isActive, isPacienteActive: $isPacienteActive");
-      if (isActive) {
-        BackgroundServices().updateLocationNotification(
-          "Servicio Ubicación Incompatible",
-          "No puedes acceder a la ubicación.",
-        );
-      }
-    }
-  }
+  //   log("🔍 Verificando si el usuario es paciente y el stream no está activo...");
+  //   if (isActive) {
+  //     log("🟢 Condiciones cumplidas, iniciando conexión al stream de ubicación...");
+  //     await createStreamConnection();
+  //   } else {
+  //     log("⚠️ Condiciones no cumplidas. isActive: $isActive");
+  //     if (isActive) {
+  //       BackgroundServices().updateLocationNotification(
+  //         "Servicio Ubicación Incompatible",
+  //         "No puedes acceder a la ubicación.",
+  //       );
+  //     }
+  //   }
+  // }
 }

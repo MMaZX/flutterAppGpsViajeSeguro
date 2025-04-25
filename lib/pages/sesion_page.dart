@@ -11,6 +11,8 @@ import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/session_provider.dart';
 import 'package:app_viaje_seguro/provider/theme_cubit.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
+import 'package:app_viaje_seguro/services/background_services.dart';
+import 'package:app_viaje_seguro/services/ws_connection_provider.dart';
 
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
@@ -64,6 +66,14 @@ class _SesionPageState extends ConsumerState<SesionPage> {
             // controller.setFaceid(faceIdToken);
             controller.setTipoAuth("google");
             controller.setToken(users.token);
+
+            // BackgroundServices().restartGPSconnection();
+            // ref.read(wsConnectionProviderNotifier.notifier).sendMessage({
+            //   "type": "init",
+            //   "userType": users.user.rol.toLowerCase().toString(),
+            //   "userId": users.user.id,
+            // });
+
             Navigator.pushAndRemoveUntil(
               context,
               CupertinoPageRoute(builder: (context) => const HomePage()),

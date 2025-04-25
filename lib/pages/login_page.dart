@@ -92,7 +92,7 @@ class _LoginScreenPageState extends ConsumerState<LoginScreenPage> {
                     passwordController.text,
                     AuthType.email,
                   );
-
+                  
                   if (response) {
                     Navigator.pushAndRemoveUntil(
                       context,

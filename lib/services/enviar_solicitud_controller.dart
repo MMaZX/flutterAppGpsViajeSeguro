@@ -23,11 +23,11 @@ class NotificationController {
   void listenToSocketMessages() async {
     // Ya no necesitamos inicializar las notificaciones aquí
     // porque estamos usando el servicio centralizado
-
     final socket = ref.read(wsConnectionProviderNotifier);
 
     // WebSocket connection established.
     final idUsuario = ref.read(userCredentialsProvider).id;
+    
     if (idUsuario != 0) {
       log('ID de usuario no disponible. No se puede escuchar mensajes.');
       return;

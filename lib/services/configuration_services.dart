@@ -33,8 +33,8 @@ class ConfigurationServices {
     // webSocketServices.restart();
 
     // 4. Iniciar la recopilación de ubicación (si es necesario)
-    final locationServices = ref.read(locationStreamProvider.notifier);
-    await locationServices.checkPacientesGPS();
+    // final locationServices = ref.read(locationStreamProvider.notifier);
+    // await locationServices.checkPacientesGPS();
     // Escuchar eventos del servicio
     service.on('stopService').listen((event) async {
       await service.stopSelf();

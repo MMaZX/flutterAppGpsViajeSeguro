@@ -101,16 +101,18 @@ class UsuariosController {
       await userNotifier.setTipoAuth(tipo.name);
       await userNotifier.setToken(user.token);
       final watch = ref.watch(wsConnectionProviderNotifier.notifier);
+      BackgroundServices().restartGPSconnection();
       watch.sendMessage({
         "type": "init",
         "userType": user.user.rol.toLowerCase().toString(),
         "userId": user.user.id,
       });
+      
       isBackReturn(context);
-      ref
-          .read(backgroundServiceControllerProvider.notifier)
-          .refreshBackground();
-      ref.read(locationStreamProvider.notifier).checkPacientesGPS();
+      // ref
+      //     .read(backgroundServiceControllerProvider.notifier)
+      //     .refreshBackground();
+      // ref.read(locationStreamProvider.notifier).checkPacientesGPS();
 
       return true;
     } catch (e) {

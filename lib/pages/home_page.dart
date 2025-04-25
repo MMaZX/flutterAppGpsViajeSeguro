@@ -36,7 +36,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(notificationControllerProvider).listenToSocketMessages();
   }
 
-
   Widget getWidgetByRol() {
     final tipoRolUserCredential = ref.watch(userCredentialsProvider).tipoRol;
     switch (tipoRolUserCredential) {
@@ -45,7 +44,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       case "FAMILIAR":
         return getIndexWidget(ref.watch(indexomeBottomNavigatorProvider));
       case "PACIENTE":
-        return getIndexWidgetPaciente(ref.watch(indexomeBottomNavigatorProvider));
+        return getIndexWidgetPaciente(
+            ref.watch(indexomeBottomNavigatorProvider));
       default:
         return getIndexWidget(ref.watch(indexomeBottomNavigatorProvider));
     }
@@ -56,7 +56,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final textTheme = ShadTheme.of(context).textTheme;
     final indexHome = ref.watch(indexomeBottomNavigatorProvider);
     final watch = ref.watch(getBottomMenuItemsProvider);
-              final tipoRolUserCredential = ref.watch(userCredentialsProvider).tipoRol;
+    final tipoRolUserCredential = ref.watch(userCredentialsProvider).tipoRol;
 
     return Scaffold(
       appBar: AppBar(
@@ -67,11 +67,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           ShadButton(
             onPressed: () async {
               final auth = ref.read(userCredentialsProvider).tipoAuth;
-
               if (auth == "google") {
                 final googleAuthService = GoogleAuthService(ref);
                 await googleAuthService.signOut();
               }
+              ref.read(userCredentialsProvider.notifier).logout();
               Navigator.pushAndRemoveUntil(
                 context,
                 CupertinoPageRoute(builder: (context) => const SesionPage()),
@@ -87,7 +87,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: SafeArea(
             child: Column(
           children: [
-        Container(
+            Container(
               width: double.maxFinite,
               alignment: Alignment.center,
               decoration: BoxDecoration(
@@ -103,11 +103,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             ),
-            Expanded(
-                child: getWidgetByRol()
-            
-            
-            ),
+            Expanded(child: getWidgetByRol()),
           ],
         )),
       ),

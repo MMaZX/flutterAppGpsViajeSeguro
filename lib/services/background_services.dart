@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:ui';
 import 'package:app_viaje_seguro/services/configuration_services.dart';
+import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
 import 'package:app_viaje_seguro/services/ws_connection_provider.dart';
 import 'package:flutter/material.dart';
@@ -157,6 +158,14 @@ class BackgroundServices {
     }
   }
 
+  Future<void> restartGPSconnection() async {
+    if (await service.isRunning()) {
+      service.invoke(InvokeServiceField.restartConnectionGps);
+    } else {
+      log("El servicio no está corriendo (stopService)");
+    }
+  }
+
   // Actualizar la notificación del servicio con información de ubicación
   Future<void> updateLocationNotification(String title, String content) async {
     final data = {'title': title, 'content': content};
@@ -174,6 +183,8 @@ void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   final provider = ProviderContainer();
   final ws = provider.read(wsConnectionProviderNotifier.notifier);
+
+  provider.read(locationStreamProvider.notifier).startLocationStream();
 
   if (service is AndroidServiceInstance) {
     service.on(InvokeServiceField.foreground).listen((event) {
@@ -220,6 +231,16 @@ void onStart(ServiceInstance service) async {
     }
   });
 
+  service.on(InvokeServiceField.restartConnectionGps).listen((event) async {
+    if (event == null) return;
+    BackgroundServices().updateLocationNotification(
+      "Reiniciando Ubicación",
+      "Se está reiniciando el servicio de localización",
+    );
+    provider.invalidate(locationStreamProvider);
+    provider.read(locationStreamProvider.notifier).startLocationStream();
+  });
+
   // 5. Establecer ciclos periódicos si son necesarios
   Timer.periodic(const Duration(seconds: 1), (timer) async {
     if (service is AndroidServiceInstance) {
@@ -243,6 +264,7 @@ class InvokeServiceField {
   static String updateNotificationWSConnection =
       'updateConnectionWSNotification';
   static String updateOnTapNotification = 'updateOnTapNotification';
+  static String restartConnectionGps = 'restartConnectionGps';
 }
 
   // final notificationService = provider.read(notificationServiceProvider);

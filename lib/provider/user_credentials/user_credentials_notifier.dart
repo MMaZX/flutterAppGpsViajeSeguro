@@ -1,5 +1,6 @@
 import 'package:app_viaje_seguro/config/shared_preferences.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_state.dart';
+import 'package:app_viaje_seguro/services/background_services.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,7 +19,8 @@ class UserCredentialsNotifier extends StateNotifier<UserCredentials> {
     final prefs = await SharedPreferences.getInstance();
     state = UserCredentials(
       id: prefs.getInt(SharedToken.clienteId) ?? 0,
-      tipoRol: (prefs.getString(SharedToken.clienteTipoRol) ?? '').toUpperCase(),
+      tipoRol:
+          (prefs.getString(SharedToken.clienteTipoRol) ?? '').toUpperCase(),
       token: prefs.getString(SharedToken.clienteToken) ?? '',
       correo: prefs.getString(SharedToken.clienteEmail) ?? '',
       faceId: prefs.getString(SharedToken.clienteFaceId) ?? '',
@@ -66,6 +68,7 @@ class UserCredentialsNotifier extends StateNotifier<UserCredentials> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     state = UserCredentials.empty();
+    BackgroundServices().restartGPSconnection();
   }
 
   Future<Options> getDioOptions() async {
