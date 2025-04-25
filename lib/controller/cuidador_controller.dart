@@ -2,14 +2,12 @@
 
 import 'package:app_viaje_seguro/config/api.dart';
 import 'package:app_viaje_seguro/config/constants.dart';
-import 'package:app_viaje_seguro/config/shared_preferences.dart';
 import 'package:app_viaje_seguro/controller/api_controller.dart';
-import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/model/cuidador_model.dart';
 import 'package:app_viaje_seguro/model/familiar_model.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
-import 'package:app_viaje_seguro/services/enviar_solicitud_controller.dart';
 import 'package:app_viaje_seguro/services/states/notifications_state.dart';
+import 'package:app_viaje_seguro/services/ws_connection_provider.dart';
 import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -101,15 +99,16 @@ class CuidadorController {
       final json = response.data;
       // print(json.toString());
 
-      final notifier =
-          ref.watch(notificationControllerProvider).sendNotificationToUser(
-                NotificationsState(
-                  title: "Se ha enviado una solicitud",
-                  body: "Un familiar a enviado la solicitud a un cuidador",
-                  idFamiliar: json['id_familiar'],
-                  idCuidador: json['id_cuidador'],
-                ),
-              );
+      final message = {
+        'event': 'enviar-solicitud',
+        'data': NotificationsState(
+          title: "Se ha enviado una solicitud",
+          body: "Un familiar a enviado la solicitud a un cuidador",
+          idFamiliar: json['id_familiar'],
+          idCuidador: json['id_cuidador'],
+        ).toMap(),
+      };
+      ref.read(wsConnectionProviderNotifier.notifier).sendMessage(message);
 
       return true;
     } catch (e) {

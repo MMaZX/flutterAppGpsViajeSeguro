@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // La clave para guardar la IP en SharedPreferences
 const String ipAddressKey = 'ip_address';
-const String defaultIpAddress = 'http://192.168.1.129/api-alzsafe/public/api';
+const String defaultIpAddress = 'http://161.132.45.25/api';
 
 // Clase que representa el estado de la conexión
 class ConnectionState {
@@ -41,16 +41,17 @@ class ConnectionNotifier extends StateNotifier<ConnectionState> {
 
   // Cargar la IP guardada de SharedPreferences
   Future<void> _loadSavedIp() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedIp = prefs.getString(ipAddressKey) ?? defaultIpAddress;
-    state = state.copyWith(ipAddress: savedIp);
+    // final prefs = await SharedPreferences.getInstance();
+    // final savedIp = prefs.getString(ipAddressKey) ?? defaultIpAddress;
+    // state = state.copyWith(ipAddress: savedIp);
+    state = state.copyWith(ipAddress: defaultIpAddress);
   }
 
   // Actualizar la IP y guardarla en SharedPreferences
   Future<void> updateIpAddress(String newIp) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(ipAddressKey, newIp);
-    state = state.copyWith(ipAddress: newIp);
+    // final prefs = await SharedPreferences.getInstance();
+    // await prefs.setString(ipAddressKey, newIp);
+    state = state.copyWith(ipAddress: defaultIpAddress);
   }
 
   // Simular una conexión (podrías reemplazar esto con tu lógica real de conexión)

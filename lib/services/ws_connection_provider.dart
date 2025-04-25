@@ -29,6 +29,8 @@ class WebSocketNotifier extends StateNotifier<WsConnectionState> {
   Future<bool> connect({int retry = 0}) async {
     if (_isTryingToConnect) return false;
 
+    final rol = await ref.read(userCredentialsProvider.notifier).getRol();
+
     _isTryingToConnect = true;
     state = state.copyWith(
       channel: null,
@@ -39,7 +41,7 @@ class WebSocketNotifier extends StateNotifier<WsConnectionState> {
 
     try {
       final ipAddress = Uri.parse(ref.read(connectionProvider).ipAddress).host;
-      final wsUri = Uri.parse('ws://$ipAddress:3000');
+      final wsUri = Uri.parse('ws://$ipAddress:5000');
       _socket = WebSocketChannel.connect(wsUri);
 
       await _socket?.ready.then((_) {
@@ -61,7 +63,7 @@ class WebSocketNotifier extends StateNotifier<WsConnectionState> {
         (data) {
           // print('Mensaje recibido: $data');
           // TE DA LA UBICACIÓN DE TUS PACIENTES
-          explorePatientUbication(data);
+          explorePatientUbication(data, rol);
           // TE DA LA SOLCIITUD DE TUS PACIENTES SI SOLO SI ERES CUIDADOR
           exploreSolicitudPatient(data);
         },
@@ -131,19 +133,18 @@ class WebSocketNotifier extends StateNotifier<WsConnectionState> {
     }
   }
 
-  void explorePatientUbication(message) {
+  void explorePatientUbication(message, String rol) {
     try {
       final decoded = jsonDecode(message);
       final event = decoded['event'];
 
       // Verificar que el evento sea el esperado
       if (event == 'patient-location-update' &&
-          ref.watch(userCredentialsProvider).tipoRol.toLowerCase() !=
-              "paciente") {
+          rol.toLowerCase() != "paciente") {
         final location = PatientLocation.fromJson(decoded);
         ref.read(patientLocationsProvider.notifier).updateLocation(location);
       } else {
-        log("Evento no reconocido o rol de usuario incorrecto: $event");
+        log("Posiblemente rol desconocido: $event");
       }
     } catch (e) {
       log("Error al procesar el mensaje WebSocket: $e");

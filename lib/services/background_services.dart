@@ -2,6 +2,8 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:ui';
+import 'package:app_viaje_seguro/config/shared_preferences.dart';
+import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
 import 'package:app_viaje_seguro/services/configuration_services.dart';
 import 'package:app_viaje_seguro/services/location_listener_notifier.dart';
 import 'package:app_viaje_seguro/services/notification_listener_notifier.dart';
@@ -10,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // enum BackgroundServiceState { stopped, initializing, running, error }
 
@@ -161,8 +164,29 @@ class BackgroundServices {
   Future<void> restartGPSconnection() async {
     if (await service.isRunning()) {
       service.invoke(InvokeServiceField.restartConnectionGps);
+      // restartOnStart();
     } else {
       log("El servicio no está corriendo (stopService)");
+    }
+  }
+
+  Future<void> getRolGPSConnection(ProviderContainer container) async {
+    try {
+      final shared = await SharedPreferences.getInstance();
+
+      final rol = shared.getString(SharedToken.clienteTipoRol);
+
+      if (rol == null || rol.isEmpty) {
+        debugPrint(
+            "[getRolGPSConnection] Rol no encontrado en SharedPreferences.");
+        return;
+      }
+
+      // Pasar el rol al provider correspondiente
+      container.read(locationStreamProvider.notifier).passedLocationStream(rol);
+      debugPrint("[getRolGPSConnection] Rol enviado al provider: $rol");
+    } catch (e, stackTrace) {
+      debugPrint("[getRolGPSConnection] Error: $e\n$stackTrace");
     }
   }
 
@@ -176,15 +200,26 @@ class BackgroundServices {
       rethrow;
     }
   }
+
+  // Future<void> restartOnStart() async {
+  //   if (await service.isRunning()) {
+  //     service.invoke(InvokeServiceField.stopService); // Corrección aquí
+  //     log("Servicio detenido exitosamente");
+  //   }
+  //   await service.startService();
+  //   log("Servicio reiniciado exitosamente");
+  // }
 }
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   final provider = ProviderContainer();
+  provider.read(userCredentialsProvider.notifier).loadFromPrefs();
   final ws = provider.read(wsConnectionProviderNotifier.notifier);
-
-  provider.read(locationStreamProvider.notifier).startLocationStream();
+  
+  ws.checkConnection();
+  // provider.read(locationStreamProvider.notifier).startLocationStream();
 
   if (service is AndroidServiceInstance) {
     service.on(InvokeServiceField.foreground).listen((event) {
@@ -205,7 +240,7 @@ void onStart(ServiceInstance service) async {
     await service.stopSelf();
   });
 
-// CON ESTE ACTUALIZAMOS LA NOTIFICACIÓN DE LA UBICACIÓN
+  // CON ESTE ACTUALIZAMOS LA NOTIFICACIÓN DE LA UBICACIÓN
   service
       .on(InvokeServiceField.updateNotificationWSConnection)
       .listen((event) async {
@@ -237,15 +272,16 @@ void onStart(ServiceInstance service) async {
       "Reiniciando Ubicación",
       "Se está reiniciando el servicio de localización",
     );
-    provider.invalidate(locationStreamProvider);
-    provider.read(locationStreamProvider.notifier).startLocationStream();
   });
 
+  BackgroundServices().getRolGPSConnection(provider);
+
   // 5. Establecer ciclos periódicos si son necesarios
-  Timer.periodic(const Duration(seconds: 1), (timer) async {
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
         // ACTIVIDADES EN MODO FOREGROUND OSEA EN SEGUNDO PLANO
+        BackgroundServices().getRolGPSConnection(provider);
         // webSocketServices.checkConnection();
         // locationServices.checkPacientesGPS();
       }
@@ -267,16 +303,9 @@ class InvokeServiceField {
   static String restartConnectionGps = 'restartConnectionGps';
 }
 
-  // final notificationService = provider.read(notificationServiceProvider);
-  // await notificationService.initialize();
-
-  // // Listener para refrescar todo el estado del isolate
-  // service.on('refreshData').listen((event) async {
-  //   print('🔄 Refreshing background isolate');
-  //   final config = ConfigurationServices(provider);
-  //   await config.initOnBackground(
-  //       service); // o bien invoca sólo tu lógica de reconfiguración
-  // });
-
-  // final config = ConfigurationServices(provider);
-  // await config.initOnBackground(service);
+// invalidateGpsConnection(ProviderContainer provider) async {
+//   BackgroundServices().restartOnStart();
+//   provider.invalidate(locationStreamProvider);
+//   provider.read(locationStreamProvider.notifier).startLocationStream();
+//   print("GPS Connection invalidated and restarted");
+// }

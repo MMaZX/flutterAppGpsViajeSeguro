@@ -72,8 +72,8 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     Future.microtask(() {
       final ws = ref.read(wsConnectionProviderNotifier.notifier);
+      ref.read(userCredentialsProvider.notifier).loadFromPrefs();
       ws.checkConnection();
-      checkRolEnForeground();
     });
   }
 
@@ -99,22 +99,18 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       ws.checkConnection();
     } else {
       BackgroundServices().setBackground();
-      // ws.checkConnection();
+      ws.checkConnection();
     }
     super.didChangeAppLifecycleState(state);
   }
 
-  void checkRolEnForeground() async {
-    final tipoRol = ref.read(userCredentialsProvider).tipoRol;
-    debugPrint("👤 Rol detectado en el widget: $tipoRol");
-  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, bool>(
       builder: (context, state) {
         return ShadApp.material(
-          title: 'GR Manager',
+          title: 'ALZSAFE MANAGER',
           materialThemeBuilder: (context, theme) {
             return ThemeData(
               fontFamily: 'Inter',

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 class UserCredentials {
   final int id;
   final String tipoRol;
@@ -44,5 +46,10 @@ class UserCredentials {
       faceId: faceId ?? this.faceId,
       tipoAuth: tipoAuth ?? this.tipoAuth,
     );
+  }
+
+  @override
+  String toString() {
+    return 'UserCredentials(id: $id, tipoRol: $tipoRol, token: $token, correo: $correo, faceId: $faceId, tipoAuth: $tipoAuth)';
   }
 }

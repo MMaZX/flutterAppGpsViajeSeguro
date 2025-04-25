@@ -1,9 +1,5 @@
-import 'package:app_viaje_seguro/config/socket.dart';
-import 'package:app_viaje_seguro/controller/usuarios_controller.dart';
 import 'package:app_viaje_seguro/pages/404.dart';
 import 'package:app_viaje_seguro/pages/cuidador/cuidador_lista_pacientes.dart';
-import 'package:app_viaje_seguro/pages/home_views/cuidador_page.dart';
-import 'package:app_viaje_seguro/pages/home_views/paciente_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/notificaciones_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/ubicacion_page.dart';
 import 'package:app_viaje_seguro/pages/page_index/usuario_page.dart';
@@ -11,7 +7,6 @@ import 'package:app_viaje_seguro/pages/sesion_page.dart';
 import 'package:app_viaje_seguro/provider/google_auth.dart';
 import 'package:app_viaje_seguro/provider/model_provider.dart';
 import 'package:app_viaje_seguro/provider/user_credentials/user_credentials_notifier.dart';
-import 'package:app_viaje_seguro/services/enviar_solicitud_controller.dart';
 import 'package:app_viaje_seguro/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,12 +24,12 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  @override
-  void initState() {
-    super.initState();
-    // Llama a listenToSocketMessages() solo una vez al inicializar el widget.
-    ref.read(notificationControllerProvider).listenToSocketMessages();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // Llama a listenToSocketMessages() solo una vez al inicializar el widget.
+  //   ref.read(notificationControllerProvider).listenToSocketMessages();
+  // }
 
   Widget getWidgetByRol() {
     final tipoRolUserCredential = ref.watch(userCredentialsProvider).tipoRol;
