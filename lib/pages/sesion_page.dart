@@ -67,7 +67,7 @@ class _SesionPageState extends ConsumerState<SesionPage> {
             // controller.setFaceid(faceIdToken);
             controller.setTipoAuth("google");
             controller.setToken(users.token);
-
+            await BackgroundServices().restartServiceBackground();
             BackgroundServices().restartGPSconnection();
             ref.read(wsConnectionProviderNotifier.notifier).sendMessage({
               "type": "init",

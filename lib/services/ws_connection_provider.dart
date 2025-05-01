@@ -90,10 +90,6 @@ class WebSocketNotifier extends StateNotifier<WsConnectionState> {
       _sendNotificationWS("Conexión Fallida", state.message);
       await Future.delayed(Duration(seconds: 2 * (retry + 1)));
       return connect(retry: retry + 1);
-      // if (retry < 5) {
-      // }
-
-      // return false;
     }
   }
 

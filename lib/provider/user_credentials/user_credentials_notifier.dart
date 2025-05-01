@@ -72,11 +72,11 @@ class UserCredentialsNotifier extends StateNotifier<UserCredentials> {
   }
 
   Future<void> logout() async {
+    await BackgroundServices().restartServiceBackground();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     state = UserCredentials.empty();
     BackgroundServices().restartGPSconnection();
-
 
   }
 

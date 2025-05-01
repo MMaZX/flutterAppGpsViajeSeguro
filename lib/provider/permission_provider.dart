@@ -16,17 +16,17 @@ class PermissionNotifier extends StateNotifier<PermissionState> {
     checkPermission();
   }
   Future<bool> checkPermission() async {
-    log("========================================");
-    log("🔍 Checking permissions...");
+    // log("========================================");
+    // log("🔍 Checking permissions...");
 
     final locationFine = await Permission.locationWhenInUse.status;
-    log("📍 Location When In Use Permission Status: $locationFine");
+    // log("📍 Location When In Use Permission Status: $locationFine");
 
     final locationCoarse = await Permission.locationAlways.status;
-    log("🌐 Location Always Permission Status: $locationCoarse");
+    // log("🌐 Location Always Permission Status: $locationCoarse");
 
     final notifications = await Permission.notification.status;
-    log("🔔 Notifications Permission Status: $notifications");
+    // log("🔔 Notifications Permission Status: $notifications");
 
     state = state.copyWith(
       locationFine: locationFine,
@@ -34,9 +34,7 @@ class PermissionNotifier extends StateNotifier<PermissionState> {
       notifications: notifications,
     );
 
-    log("✅ Permission check completed. Updated state: $state");
-    log("========================================");
-
+    log("========================================\n✅ Permisos de la app: $state\n========================================");
     return state.locationGranted &&
         state.locationAlwaysGranted &&
         state.notificationsGranted;

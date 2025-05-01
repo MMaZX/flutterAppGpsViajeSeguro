@@ -106,8 +106,12 @@ class UsuariosController {
         "userType": user.user.rol.toLowerCase().toString(),
         "userId": user.user.id,
       });
+
+      await BackgroundServices().restartServiceBackground();
       BackgroundServices().restartGPSconnection();
-      ref.read(locationStreamProvider.notifier).passedLocationStream(user.user.rol);
+      ref
+          .read(locationStreamProvider.notifier)
+          .passedLocationStream(user.user.rol);
       isBackReturn(context);
       // ref
       //     .read(backgroundServiceControllerProvider.notifier)

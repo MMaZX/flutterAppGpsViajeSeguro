@@ -118,8 +118,6 @@ class BackgroundServiceController extends StateNotifier<bool> {
   // Método para solicitar una reconexión del WebSocket
   Future<void> requestWebSocketReconnect() async {
     _service.invoke('requestReconnect');
-    // if (await _service.isRunning()) {
-    // }
   }
 
   // Modifica el método updateServiceNotification para permitir agregar acciones
@@ -173,15 +171,12 @@ class BackgroundServices {
   Future<void> getRolGPSConnection(ProviderContainer container) async {
     try {
       final shared = await SharedPreferences.getInstance();
-
       final rol = shared.getString(SharedToken.clienteTipoRol);
-
       if (rol == null || rol.isEmpty) {
         debugPrint(
             "[getRolGPSConnection] Rol no encontrado en SharedPreferences.");
         return;
       }
-
       // Pasar el rol al provider correspondiente
       container.read(locationStreamProvider.notifier).passedLocationStream(rol);
       debugPrint("[getRolGPSConnection] Rol enviado al provider: $rol");
@@ -201,14 +196,30 @@ class BackgroundServices {
     }
   }
 
-  // Future<void> restartOnStart() async {
-  //   if (await service.isRunning()) {
-  //     service.invoke(InvokeServiceField.stopService); // Corrección aquí
-  //     log("Servicio detenido exitosamente");
-  //   }
-  //   await service.startService();
-  //   log("Servicio reiniciado exitosamente");
+  // Future<void> restartServiceBackground() async {
+    // service.invoke(InvokeServiceField.stopService);
+    // await service.startService();
+    // log("Servicio reiniciado exitosamente");
+    // service.invoke(InvokeServiceField.background);
+    // service.invoke(InvokeServiceField.foreground);
   // }
+  // Future<void> restartServiceBackground() async {
+  //   service.invoke(InvokeServiceField.stopService);
+
+  //   bool started = await service.startService();
+  //   log("Servicio reiniciado exitosamente");
+
+  //   if (started) {
+  //     // Esperamos un poco para asegurarnos de que el engine esté listo
+  //     await Future.delayed(const Duration(seconds: 1));
+
+  //     service.invoke(InvokeServiceField.background);
+  //     service.invoke(InvokeServiceField.foreground);
+  //   } else {
+  //     log("No se pudo reiniciar el servicio");
+  //   }
+  // }
+
 }
 
 @pragma('vm:entry-point')
@@ -217,7 +228,7 @@ void onStart(ServiceInstance service) async {
   final provider = ProviderContainer();
   provider.read(userCredentialsProvider.notifier).loadFromPrefs();
   final ws = provider.read(wsConnectionProviderNotifier.notifier);
-  
+
   ws.checkConnection();
   // provider.read(locationStreamProvider.notifier).startLocationStream();
 
@@ -272,20 +283,27 @@ void onStart(ServiceInstance service) async {
       "Reiniciando Ubicación",
       "Se está reiniciando el servicio de localización",
     );
+    // FlutterBackgroundService().invoke(InvokeServiceField.restartServices);
+    BackgroundServices().getRolGPSConnection(provider);
+  });
+
+  service.on('requestRestart').listen((event) async {
+    final container = ProviderContainer();
+    BackgroundServices().getRolGPSConnection(container);
   });
 
   BackgroundServices().getRolGPSConnection(provider);
 
   // 5. Establecer ciclos periódicos si son necesarios
   Timer.periodic(const Duration(seconds: 5), (timer) async {
+    final container0 = ProviderContainer();
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
         // ACTIVIDADES EN MODO FOREGROUND OSEA EN SEGUNDO PLANO
-        BackgroundServices().getRolGPSConnection(provider);
+        BackgroundServices().getRolGPSConnection(container0);
         // webSocketServices.checkConnection();
         // locationServices.checkPacientesGPS();
       }
-
       // print("Hello world! INVOKED UPDATE SERVICE");
       // service.invoke(InvokeServiceField.updateService);
     }
@@ -301,6 +319,7 @@ class InvokeServiceField {
       'updateConnectionWSNotification';
   static String updateOnTapNotification = 'updateOnTapNotification';
   static String restartConnectionGps = 'restartConnectionGps';
+  static String restartServices = "requestRestart";
 }
 
 // invalidateGpsConnection(ProviderContainer provider) async {

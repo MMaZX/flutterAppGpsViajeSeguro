@@ -100,16 +100,15 @@ class _FormularioSesionGooglePageState
       // controller.setFaceid(faceIdToken);
       controller.setTipoAuth("google");
       controller.setToken(users.token);
-      
-      
+
       ref.read(wsConnectionProviderNotifier.notifier).sendMessage({
         "type": "init",
         "userType": users.user.rol.toLowerCase().toString(),
         "userId": users.user.id,
       });
-
+      await BackgroundServices().restartServiceBackground();
       BackgroundServices().restartGPSconnection();
-          ref
+      ref
           .read(locationStreamProvider.notifier)
           .passedLocationStream(users.user.rol);
       Navigator.pushAndRemoveUntil(

@@ -322,9 +322,11 @@ class _ChangePacientesByFamiliarState
         },
       ),
       selectedOptionBuilder: (context, value) => Text(value.name.toUpperCase()),
-      placeholder: Text(watch.name.isEmpty
-          ? "Selecciona un paciente"
-          : watch.name.toUpperCase()),
+      placeholder: Text(
+        watch.name.isEmpty
+            ? "Selecciona un paciente"
+            : watch.name.toUpperCase(),
+      ),
       onChanged: (value) {
         if (value != null) {
           ref

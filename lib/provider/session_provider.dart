@@ -6,11 +6,11 @@ import 'package:app_viaje_seguro/widgets/model_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // La clave para guardar la IP en SharedPreferences
 const String ipAddressKey = 'ip_address';
-const String defaultIpAddress = 'http://161.132.45.25/api';
+// const String defaultIpAddress = 'http://161.132.45.25/api';
+const String defaultIpAddress = 'http://192.168.1.129/api-alzsafe/public/api';
 
 // Clase que representa el estado de la conexión
 class ConnectionState {
